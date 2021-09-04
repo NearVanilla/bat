@@ -7,6 +7,9 @@ import com.velocitypowered.api.plugin.Plugin;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.slf4j.Logger;
 
+/**
+ * bat's Velocity entrypoint.
+ */
 @Plugin(
         id = "bat",
         name = "bat",
@@ -16,10 +19,20 @@ import org.slf4j.Logger;
 )
 public class BatVelocityPlugin {
 
+    private final @NonNull Logger logger;
+
+    /**
+     * Constructs {@code BatVelocityPlugin}.
+     *
+     * @param logger the logger
+     */
     @Inject
-    private Logger logger;
+    public BatVelocityPlugin(final @NonNull Logger logger) {
+        this.logger = logger;
+    }
 
     @Subscribe
     public void onProxyInitialization(ProxyInitializeEvent event) {
+
     }
 }
