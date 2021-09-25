@@ -7,6 +7,7 @@ import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.spongepowered.configurate.CommentedConfigurationNode;
 import org.spongepowered.configurate.hocon.HoconConfigurationLoader;
+import org.spongepowered.configurate.objectmapping.ObjectMapper;
 
 import java.io.File;
 import java.nio.file.Path;
@@ -22,14 +23,15 @@ public class ConfigLoader {
             This configuration uses MiniMessage formatting for strings.
             In addition to the default MiniMessage tags, the following tags are supported:
             - <proxycount> - the total players connected to the proxy
-            - <servercount> - the total players connected to the player's current server
             - <proxymax> - the max amount of players able to be connected to the proxy
+            - <proxymotd> - the proxy's motd
+            - <servercount> - the total players connected to the player's current server
             - <servermax> - the max amount of players able to be connected to the server
-            - <ping> - the player's ping
-            - <motd> - the proxy's motd
-            - <uuid> - the player's uuid
+            - <servermotd> - the server's motd
+            - <playerping> - the player's ping
+            - <playeruuid> - the player's uuid
             - <playername> - the player's name
-            - <ip> - the player's ip
+            - <playerip> - the player's ip
              """;
 
     private final @NonNull BatVelocityPlugin plugin;
@@ -86,7 +88,7 @@ public class ConfigLoader {
 
         try {
             node = loader.load();
-            final BatConfig config = node.get(BatConfig.class);
+            final BatConfig config = ObjectMapper.factory().get(BatConfig.class).load(node);
             if (config == null) {
                 throw new RuntimeException("Config is null");
             }

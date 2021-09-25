@@ -1,11 +1,13 @@
 package com.nearvanilla.bat.velocity;
 
 import com.google.inject.Inject;
-import com.nearvanilla.bat.velocity.config.BatConfig;
-import com.nearvanilla.bat.velocity.config.ConfigLoader;
+import com.google.inject.Injector;
+import com.nearvanilla.bat.velocity.tab.TablistService;
 import com.velocitypowered.api.event.Subscribe;
+import com.velocitypowered.api.event.player.ServerPostConnectEvent;
 import com.velocitypowered.api.event.proxy.ProxyInitializeEvent;
 import com.velocitypowered.api.plugin.Plugin;
+import com.velocitypowered.api.proxy.Player;
 import com.velocitypowered.api.proxy.ProxyServer;
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.checkerframework.checker.nullness.qual.NonNull;
@@ -25,9 +27,9 @@ public class BatVelocityPlugin {
 
     private final @NonNull ProxyServer server;
     private final @NonNull Logger logger;
-    private final @NonNull ConfigLoader configLoader;
+    private final @NonNull Injector injector;
 
-    private @MonotonicNonNull BatConfig config;
+    private @MonotonicNonNull TablistService tablistService;
 
     /**
      * Constructs {@code BatVelocityPlugin}.
@@ -37,10 +39,10 @@ public class BatVelocityPlugin {
     @Inject
     public BatVelocityPlugin(final @NonNull Logger logger,
                              final @NonNull ProxyServer server,
-                             final @NonNull ConfigLoader configLoader) {
+                             final @NonNull Injector injector) {
         this.server = server;
         this.logger = logger;
-        this.configLoader = configLoader;
+        this.injector = injector;
     }
 
     /**
@@ -50,6 +52,17 @@ public class BatVelocityPlugin {
      */
     @Subscribe
     public void onProxyInitialization(final @NonNull ProxyInitializeEvent event) {
-        this.config = this.configLoader.batConfig();
+        this.enable();
+    }
+
+    @Subscribe
+    public void onPlayerJoin(final @NonNull ServerPostConnectEvent event) {
+        final Player player = event.getPlayer();
+        this.tablistService.updateTablist(player);
+    }
+
+    public void enable() {
+        this.tablistService = this.injector.getInstance(TablistService.class);
+        this.tablistService.enable();
     }
 }
