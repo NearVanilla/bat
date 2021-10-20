@@ -15,6 +15,7 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.kyori.adventure.text.minimessage.Template;
+import net.kyori.adventure.text.minimessage.template.TemplateResolver;
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
@@ -124,7 +125,7 @@ public class TablistService {
         final Iterator<String> footerIt = footerFormatStrings.iterator();
 
         while (footerIt.hasNext()) {
-            footer.append(this.miniMessage.parse(footerIt.next(), templates));
+            footer.append(this.miniMessage.deserialize(footerIt.next(), TemplateResolver.templates(templates)));
 
             if (footerIt.hasNext()) {
                 footer.append(Component.newline());
@@ -137,7 +138,7 @@ public class TablistService {
         final Iterator<String> headerIt = headerFormatStrings.iterator();
 
         while (headerIt.hasNext()) {
-            header.append(this.miniMessage.parse(headerIt.next(), templates));
+            header.append(this.miniMessage.deserialize(headerIt.next(), TemplateResolver.templates(templates)));
 
             if (headerIt.hasNext()) {
                 header.append(Component.newline());
@@ -185,19 +186,19 @@ public class TablistService {
         final Date now = new Date();
 
         return List.of(
-                Template.of("proxycount", Integer.toString(server.getPlayerCount())),
-                Template.of("proxymax", Integer.toString(server.getConfiguration().getShowMaxPlayers())),
-                Template.of("proxymotd", server.getConfiguration().getMotd()),
-                Template.of("servercount", Integer.toString(onlinePlayers)),
-                Template.of("servermax", Integer.toString(maxPlayers)),
-                Template.of("servermotd", motd),
-                Template.of("playerping", Long.toString(player.getPing())),
-                Template.of("playeruuid", player.getUniqueId().toString()),
-                Template.of("playername", player.getUsername()),
-                Template.of("playerip", player.getRemoteAddress().getAddress().getHostAddress()),
-                Template.of("time", TIME_FORMAT.format(now)),
-                Template.of("date", DATE_FORMAT.format(now)),
-                Template.of("datetime", DATETIME_FORMAT.format(now))
+                Template.template("proxycount", Integer.toString(server.getPlayerCount())),
+                Template.template("proxymax", Integer.toString(server.getConfiguration().getShowMaxPlayers())),
+                Template.template("proxymotd", server.getConfiguration().getMotd()),
+                Template.template("servercount", Integer.toString(onlinePlayers)),
+                Template.template("servermax", Integer.toString(maxPlayers)),
+                Template.template("servermotd", motd),
+                Template.template("playerping", Long.toString(player.getPing())),
+                Template.template("playeruuid", player.getUniqueId().toString()),
+                Template.template("playername", player.getUsername()),
+                Template.template("playerip", player.getRemoteAddress().getAddress().getHostAddress()),
+                Template.template("time", TIME_FORMAT.format(now)),
+                Template.template("date", DATE_FORMAT.format(now)),
+                Template.template("datetime", DATETIME_FORMAT.format(now))
         );
     }
 
