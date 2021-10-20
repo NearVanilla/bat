@@ -36,7 +36,7 @@ public class ConfigLoader {
 
     private final @NonNull BatVelocityPlugin plugin;
     private final @NonNull Path dataDirectory;
-    private @MonotonicNonNull BatConfig batConfig;
+    private @MonotonicNonNull PluginConfig pluginConfig;
 
     @Inject
     public ConfigLoader(final @NonNull BatVelocityPlugin plugin,
@@ -46,19 +46,19 @@ public class ConfigLoader {
     }
 
     /**
-     * Returns the {@link BatConfig}.
+     * Returns the {@link PluginConfig}.
      *
      * @return the config
      */
-    public @NonNull BatConfig batConfig() {
-        if (this.batConfig == null) {
-            this.batConfig = this.loadConfiguration();
+    public @NonNull PluginConfig batConfig() {
+        if (this.pluginConfig == null) {
+            this.pluginConfig = this.loadConfiguration();
         }
 
-        return this.batConfig;
+        return this.pluginConfig;
     }
 
-    private @NonNull BatConfig loadConfiguration() {
+    private @NonNull PluginConfig loadConfiguration() {
         final File configFile = new File(dataDirectory.toFile(), "bat.conf");
 
         final @NonNull HoconConfigurationLoader loader = HoconConfigurationLoader
@@ -88,7 +88,7 @@ public class ConfigLoader {
 
         try {
             node = loader.load();
-            final BatConfig config = ObjectMapper.factory().get(BatConfig.class).load(node);
+            final PluginConfig config = ObjectMapper.factory().get(PluginConfig.class).load(node);
             if (config == null) {
                 throw new RuntimeException("Config is null");
             }

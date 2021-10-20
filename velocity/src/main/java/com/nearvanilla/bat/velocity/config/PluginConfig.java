@@ -8,7 +8,7 @@ import java.util.Map;
 /**
  * Contains the plugin's configuration.
  */
-public class BatConfig {
+public class PluginConfig {
 
     @Comment("""
             Controls how many milliseconds should pass between tablist updates.

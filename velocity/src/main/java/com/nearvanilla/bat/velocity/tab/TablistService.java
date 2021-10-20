@@ -2,7 +2,7 @@ package com.nearvanilla.bat.velocity.tab;
 
 import com.google.inject.Inject;
 import com.nearvanilla.bat.velocity.BatVelocityPlugin;
-import com.nearvanilla.bat.velocity.config.BatConfig;
+import com.nearvanilla.bat.velocity.config.PluginConfig;
 import com.nearvanilla.bat.velocity.config.ConfigLoader;
 import com.nearvanilla.bat.velocity.config.TablistConfig;
 import com.velocitypowered.api.proxy.Player;
@@ -37,7 +37,7 @@ public class TablistService {
 
     private final @NonNull BatVelocityPlugin plugin;
     private final @NonNull MiniMessage miniMessage;
-    private final @NonNull BatConfig config;
+    private final @NonNull PluginConfig config;
     private final @NonNull ProxyServer server;
     private final @NonNull Logger logger;
     private final @NonNull Map<String, Tablist> tablistMap;
