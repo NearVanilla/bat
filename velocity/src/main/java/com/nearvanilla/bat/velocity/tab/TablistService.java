@@ -2,8 +2,8 @@ package com.nearvanilla.bat.velocity.tab;
 
 import com.google.inject.Inject;
 import com.nearvanilla.bat.velocity.BatVelocityPlugin;
-import com.nearvanilla.bat.velocity.config.PluginConfig;
 import com.nearvanilla.bat.velocity.config.ConfigLoader;
+import com.nearvanilla.bat.velocity.config.PluginConfig;
 import com.nearvanilla.bat.velocity.config.TablistConfig;
 import com.velocitypowered.api.proxy.Player;
 import com.velocitypowered.api.proxy.ProxyServer;
@@ -66,7 +66,7 @@ public class TablistService {
         this.activeTablistMap = new ConcurrentHashMap<>();
         this.logger = logger;
         this.server = server;
-        this.miniMessage = MiniMessage.get();
+        this.miniMessage = MiniMessage.miniMessage();
     }
 
     public void enable() {
@@ -209,9 +209,7 @@ public class TablistService {
         final var servers = this.server.getAllServers();
 
         for (final RegisteredServer server : servers) {
-            server.ping().thenAcceptAsync(ping -> {
-                this.pingMap.put(server.getServerInfo().getName(), ping);
-            });
+            server.ping().thenAcceptAsync(ping -> this.pingMap.put(server.getServerInfo().getName(), ping));
         }
     }
 

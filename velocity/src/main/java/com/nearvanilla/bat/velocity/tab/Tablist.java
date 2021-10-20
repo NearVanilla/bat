@@ -1,6 +1,5 @@
 package com.nearvanilla.bat.velocity.tab;
 
-import net.kyori.adventure.text.Component;
 import org.checkerframework.checker.nullness.qual.NonNull;
 
 import java.util.List;
@@ -13,9 +12,10 @@ public class Tablist {
 
     /**
      * Constructs {@code Tablist}.
+     *
      * @param headerFormatStrings a list containing the tablist's header
      * @param footerFormatStrings a list containing the tablist's footer
-     * @param sortType the tablist's sorting type
+     * @param sortType            the tablist's sorting type
      */
     public Tablist(final @NonNull List<String> headerFormatStrings,
                    final @NonNull List<String> footerFormatStrings,
