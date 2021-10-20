@@ -20,6 +20,7 @@ import org.slf4j.Logger;
         id = "bat",
         name = "bat",
         version = "1.0.0",
+        authors = {"Bluely_"},
         description = "Basic, awesome TAB plugin",
         url = "nearvanilla.com"
 )

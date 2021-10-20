@@ -31,8 +31,7 @@ public class ConfigLoader {
             - <playerping> - the player's ping
             - <playeruuid> - the player's uuid
             - <playername> - the player's name
-            - <playerip> - the player's ip
-             """;
+            - <playerip> - the player's ip""";
 
     private final @NonNull BatVelocityPlugin plugin;
     private final @NonNull Path dataDirectory;
