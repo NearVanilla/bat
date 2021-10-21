@@ -24,14 +24,14 @@ public class PluginConfig {
 
     public @NonNull String defaultTablist = "default";
 
-    public @NonNull String playerNameFormat = "<groupCode><name><serverCode>";
+    public @NonNull String playerNameFormat = "<groupcode><name><servercode>";
 
     @Comment("""
             If a player is in a LuckPerms group defined in this map, then the template "<groupcode>" will return it's
             value in this map. Otherwise, "<groupcode>" will return nothing ("").
             """)
     public @NonNull Map<String, String> groupCodes = Map.of(
-            "admin", "<red><bold>A</bold><red> "
+            "admin", "<red><bold>A</bold></red> "
     );
 
     @Comment("""
