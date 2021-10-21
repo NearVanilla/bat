@@ -17,21 +17,23 @@ import java.nio.file.Path;
  */
 public class ConfigLoader {
 
-    private static final @NonNull String CONFIG_HEADER = """
-            bat - tablist.conf
-            ------------------
-            This configuration uses MiniMessage formatting for strings.
-            In addition to the default MiniMessage tags, the following tags are supported:
-            - <proxycount> - the total players connected to the proxy
-            - <proxymax> - the max amount of players able to be connected to the proxy
-            - <proxymotd> - the proxy's motd
-            - <servercount> - the total players connected to the player's current server
-            - <servermax> - the max amount of players able to be connected to the server
-            - <servermotd> - the server's motd
-            - <playerping> - the player's ping
-            - <playeruuid> - the player's uuid
-            - <playername> - the player's name
-            - <playerip> - the player's ip""";
+    private static final @NonNull String CONFIG_HEADER =
+        """
+        bat - tablist.conf
+        ------------------
+        This configuration uses MiniMessage formatting for strings.
+        In addition to the default MiniMessage tags, the following tags are supported:
+        - <proxycount> - the total players connected to the proxy
+        - <proxymax> - the max amount of players able to be connected to the proxy
+        - <proxymotd> - the proxy's motd
+        - <servercount> - the total players connected to the player's current server
+        - <servermax> - the max amount of players able to be connected to the server
+        - <servermotd> - the server's motd
+        - <playerping> - the player's ping
+        - <playeruuid> - the player's uuid
+        - <playername> - the player's name
+        - <playerip> - the player's ip
+        """;
 
     private final @NonNull BatVelocityPlugin plugin;
     private final @NonNull Path dataDirectory;
@@ -64,21 +66,7 @@ public class ConfigLoader {
                 .builder()
                 .defaultOptions(opts -> opts
                         .shouldCopyDefaults(true)
-                        .header("""
-                                bat - tablist.conf
-                                ------------------
-                                This configuration uses MiniMessage formatting for strings.
-                                In addition to the default MiniMessage tags, the following tags are supported:
-                                - <proxycount> - the total players connected to the proxy
-                                - <servercount> - the total players connected to the player's current server
-                                - <proxymax> - the max amount of players able to be connected to the proxy
-                                - <servermax> - the max amount of players able to be connected to the server
-                                - <ping> - the player's ping
-                                - <motd> - the proxy's motd
-                                - <uuid> - the player's uuid
-                                - <playername> - the player's name
-                                - <ip> - the player's ip
-                                """)
+                        .header(CONFIG_HEADER)
                 )
                 .file(configFile)
                 .build();
