@@ -1,6 +1,7 @@
 package com.nearvanilla.bat.velocity.tab;
 
 import com.google.inject.Inject;
+import com.google.inject.Singleton;
 import com.nearvanilla.bat.velocity.BatVelocityPlugin;
 import com.nearvanilla.bat.velocity.config.ConfigLoader;
 import com.nearvanilla.bat.velocity.config.PluginConfig;

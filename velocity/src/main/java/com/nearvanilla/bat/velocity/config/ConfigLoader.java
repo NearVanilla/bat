@@ -1,6 +1,7 @@
 package com.nearvanilla.bat.velocity.config;
 
 import com.google.inject.Inject;
+import com.google.inject.Singleton;
 import com.nearvanilla.bat.velocity.BatVelocityPlugin;
 import com.velocitypowered.api.plugin.annotation.DataDirectory;
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
@@ -15,6 +16,7 @@ import java.nio.file.Path;
 /**
  * Loads and provides configuration objects.
  */
+@Singleton
 public class ConfigLoader {
 
     private static final @NonNull String CONFIG_HEADER =
