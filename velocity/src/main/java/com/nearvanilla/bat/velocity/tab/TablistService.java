@@ -47,16 +47,17 @@ public class TablistService {
 
     private final @NonNull BatVelocityPlugin plugin;
     private final @NonNull MiniMessage miniMessage;
-    private final @NonNull PluginConfig config;
+    private final @NonNull ConfigLoader configLoader;
     private final @NonNull ProxyServer server;
     private final @NonNull Logger logger;
     private final @NonNull Map<String, Tablist> tablistMap;
     private final @NonNull Map<String, ServerPing> pingMap;
-    private final @NonNull Map<UUID, Tablist> activeTablistMap;
     private final @NonNull LuckPerms luckPerms;
 
     private @MonotonicNonNull ScheduledTask pingUpdateTask;
     private @MonotonicNonNull ScheduledTask tablistUpdateTask;
+    private @MonotonicNonNull PluginConfig config;
+
 
     /**
      * Constructs {@code TablistService}
@@ -71,10 +72,9 @@ public class TablistService {
                           final @NonNull ProxyServer server,
                           final @NonNull Logger logger) {
         this.plugin = plugin;
-        this.config = configLoader.batConfig();
+        this.configLoader = configLoader;
         this.tablistMap = new ConcurrentHashMap<>();
         this.pingMap = new ConcurrentHashMap<>();
-        this.activeTablistMap = new ConcurrentHashMap<>();
         this.logger = logger;
         this.server = server;
         this.miniMessage = MiniMessage.miniMessage();
@@ -85,6 +85,7 @@ public class TablistService {
      * Enables the tablist service.
      */
     public void enable() {
+        this.config = configLoader.batConfig();
         for (final var entry : this.config.tablists.entrySet()) {
             final String id = entry.getKey();
             final TablistConfig tablistConfig = entry.getValue();
@@ -106,6 +107,15 @@ public class TablistService {
                 .repeat(this.config.updateFrequency, TimeUnit.MILLISECONDS)
                 .schedule();
 
+    }
+
+    /**
+     * Disables the tablist service
+     */
+    public void disable() {
+        this.tablistUpdateTask.cancel();
+        this.pingUpdateTask.cancel();
+        this.tablistMap.clear();
     }
 
     /**

@@ -47,13 +47,20 @@ public class ConfigLoader {
     }
 
     /**
+     * Reloads {@link PluginConfig}
+     */
+    public void reloadConfig() {
+        this.pluginConfig = this.loadConfiguration();
+    }
+
+    /**
      * Returns the {@link PluginConfig}.
      *
      * @return the config
      */
     public @NonNull PluginConfig batConfig() {
         if (this.pluginConfig == null) {
-            this.pluginConfig = this.loadConfiguration();
+            reloadConfig();
         }
 
         return this.pluginConfig;
