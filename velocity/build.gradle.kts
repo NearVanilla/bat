@@ -2,9 +2,10 @@ dependencies {
     compileOnly(libs.velocity.api)
     annotationProcessor(libs.velocity.api)
 
-    compileOnly(libs.cloud.velocity)
     compileOnly(libs.luckperms)
 
+    implementation(libs.cloud.velocity)
+    implementation(libs.cloud.annotations)
     implementation(libs.adventure.minimessage)
     implementation(libs.configurate.hocon)
 }

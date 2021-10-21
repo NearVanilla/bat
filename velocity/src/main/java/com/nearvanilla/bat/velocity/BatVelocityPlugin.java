@@ -2,6 +2,7 @@ package com.nearvanilla.bat.velocity;
 
 import com.google.inject.Inject;
 import com.google.inject.Injector;
+import com.nearvanilla.bat.velocity.command.Commands;
 import com.nearvanilla.bat.velocity.tab.TablistService;
 import com.velocitypowered.api.event.Subscribe;
 import com.velocitypowered.api.event.player.ServerPostConnectEvent;
@@ -31,6 +32,7 @@ public class BatVelocityPlugin {
     private final @NonNull Injector injector;
 
     private @MonotonicNonNull TablistService tablistService;
+    private @MonotonicNonNull Commands commands;
 
     /**
      * Constructs {@code BatVelocityPlugin}.
@@ -65,5 +67,7 @@ public class BatVelocityPlugin {
     public void enable() {
         this.tablistService = this.injector.getInstance(TablistService.class);
         this.tablistService.enable();
+        this.commands = this.injector.getInstance(Commands.class);
+        this.commands.register();
     }
 }
