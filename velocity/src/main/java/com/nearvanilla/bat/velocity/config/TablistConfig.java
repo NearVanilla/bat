@@ -52,6 +52,8 @@ public class TablistConfig {
             The tablist's sorting type.
             Possible values:
             - NONE (let Minecraft handle tablist sorting)
+            - SERVER (sort by server using configured priorities)
+            - GROUP (sort by LuckPerms group using configured priorities)
             """)
     public @NonNull SortType sortType = SortType.NONE;
 
