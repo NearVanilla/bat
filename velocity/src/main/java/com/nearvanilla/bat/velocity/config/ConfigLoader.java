@@ -71,10 +71,9 @@ public class ConfigLoader {
                 .file(configFile)
                 .build();
 
-        @NonNull CommentedConfigurationNode node;
 
         try {
-            node = loader.load();
+            @NonNull CommentedConfigurationNode node = loader.load();
             final PluginConfig config = ObjectMapper.factory().get(PluginConfig.class).load(node);
             if (config == null) {
                 throw new RuntimeException("Config is null");
