@@ -39,6 +39,7 @@ import java.util.logging.Logger;
 /**
  * Enables tablist functionality.
  */
+@Singleton
 public class TablistService {
 
     private static final @NonNull SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("hh:mm a");
