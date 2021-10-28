@@ -118,6 +118,12 @@ public class TablistService {
                 .buildTask(this.plugin, this::updateTablists)
                 .repeat(this.config.updateFrequency, TimeUnit.MILLISECONDS)
                 .schedule();
+
+        if (this.defaultTablist != null) {
+            for (final Player player : this.server.getAllPlayers()) {
+                this.defaultTablist.addPlayer(player);
+            }
+        }
     }
 
     /**
