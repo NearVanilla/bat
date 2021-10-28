@@ -15,6 +15,11 @@ tasks {
         dependsOn(named("shadowJar"))
     }
 
+    compileJava {
+        sourceCompatibility = "16"
+        targetCompatibility = "16"
+    }
+
     shadowJar {
         archiveClassifier.set(null as String?)
         archiveFileName.set(project.name + ".jar")

@@ -74,7 +74,6 @@ public class Commands {
     private void reloadConfig(final @NonNull CommandSource source) {
         try {
             this.configLoader.reloadConfig();
-            this.tablistService.disable();
             this.tablistService.enable();
         } catch (RuntimeException e) {
             source.sendMessage(CONFIG_RELOAD_FAILURE);

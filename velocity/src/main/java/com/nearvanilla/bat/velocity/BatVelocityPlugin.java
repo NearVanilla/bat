@@ -5,11 +5,13 @@ import com.google.inject.Injector;
 import com.nearvanilla.bat.velocity.command.Commands;
 import com.nearvanilla.bat.velocity.tab.TablistService;
 import com.velocitypowered.api.event.Subscribe;
+import com.velocitypowered.api.event.connection.DisconnectEvent;
+import com.velocitypowered.api.event.player.PlayerChooseInitialServerEvent;
 import com.velocitypowered.api.event.player.ServerPostConnectEvent;
 import com.velocitypowered.api.event.proxy.ProxyInitializeEvent;
 import com.velocitypowered.api.plugin.Plugin;
-import com.velocitypowered.api.proxy.Player;
 import com.velocitypowered.api.proxy.ProxyServer;
+import net.luckperms.api.event.user.UserDataRecalculateEvent;
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.slf4j.Logger;
@@ -48,20 +50,26 @@ public class BatVelocityPlugin {
         this.injector = injector;
     }
 
-    /**
-     * Handles {@link ProxyInitializeEvent}.
-     *
-     * @param event the event
-     */
     @Subscribe
     public void onProxyInitialization(final @NonNull ProxyInitializeEvent event) {
         this.enable();
     }
 
     @Subscribe
-    public void onPlayerJoin(final @NonNull ServerPostConnectEvent event) {
-        final Player player = event.getPlayer();
-        this.tablistService.updateTablist(player);
+    public void onPlayerSwitch(final @NonNull ServerPostConnectEvent event) {
+        this.tablistService.handleServerConnection(event.getPlayer());
+    }
+
+    @Subscribe
+    public void onPlayerQuit(final @NonNull DisconnectEvent event) {
+        this.tablistService.handlePlayerLeave(event.getPlayer());
+    }
+
+    @Subscribe
+    public void onGroupChange(final @NonNull UserDataRecalculateEvent event) {
+        event.getData()
+                .getMetaData()
+                .getPrimaryGroup();
     }
 
     public void enable() {
