@@ -40,25 +40,6 @@ public class ServerDataProvider {
     }
 
     /**
-     * Handles a player leaving the proxy.
-     *
-     * @param player the player
-     */
-    public void handlePlayerLeave(final @NonNull Player player) {
-        this.playerPingMap.remove(player.getUniqueId());
-    }
-
-    /**
-     * Returns the player's latency.
-     *
-     * @param uuid the uuid
-     * @return the latency
-     */
-    public int getLatency(final @NonNull UUID uuid) {
-        return this.playerPingMap.getOrDefault(uuid, 0);
-    }
-
-    /**
      * Returns {@code serverName}'s max players.
      *
      * @param serverName the server name
