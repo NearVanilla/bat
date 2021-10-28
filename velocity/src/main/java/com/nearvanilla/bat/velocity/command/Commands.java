@@ -1,5 +1,6 @@
 package com.nearvanilla.bat.velocity.command;
 
+import cloud.commandframework.Command;
 import cloud.commandframework.annotations.AnnotationParser;
 import cloud.commandframework.annotations.CommandDescription;
 import cloud.commandframework.annotations.CommandMethod;
@@ -12,7 +13,6 @@ import com.nearvanilla.bat.velocity.tab.TablistService;
 import com.velocitypowered.api.proxy.ProxyServer;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
-import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import cloud.commandframework.velocity.VelocityCommandManager;
 import cloud.commandframework.CommandManager;

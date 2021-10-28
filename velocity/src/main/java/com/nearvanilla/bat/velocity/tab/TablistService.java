@@ -113,6 +113,10 @@ public class TablistService {
 
         this.defaultTablist = this.tablistMap.get(this.config.defaultTablist);
 
+        if (this.tablistUpdateTask != null) {
+            this.tablistUpdateTask.cancel();
+        }
+
         this.tablistUpdateTask = server.getScheduler()
                 .buildTask(this.plugin, this::updateTablists)
                 .repeat(this.config.updateFrequency, TimeUnit.MILLISECONDS)
