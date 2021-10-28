@@ -1,19 +1,14 @@
 package com.nearvanilla.bat.velocity.command;
 
-import cloud.commandframework.Command;
 import cloud.commandframework.annotations.AnnotationParser;
 import cloud.commandframework.annotations.CommandDescription;
 import cloud.commandframework.annotations.CommandMethod;
 import cloud.commandframework.annotations.CommandPermission;
-import cloud.commandframework.arguments.parser.ParserParameter;
-import cloud.commandframework.arguments.parser.StandardParameters;
-import cloud.commandframework.meta.CommandMeta;
 import cloud.commandframework.meta.SimpleCommandMeta;
 import com.google.inject.Inject;
 import com.nearvanilla.bat.velocity.BatVelocityPlugin;
 import com.nearvanilla.bat.velocity.config.ConfigLoader;
 import com.nearvanilla.bat.velocity.tab.TablistService;
-import com.velocitypowered.api.plugin.PluginManager;
 import com.velocitypowered.api.proxy.ProxyServer;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
@@ -41,8 +36,7 @@ public class Commands {
     public Commands(final @NonNull BatVelocityPlugin plugin,
                     final @NonNull ConfigLoader configLoader,
                     final @NonNull TablistService tablistService,
-                    final @NonNull ProxyServer server
-                    ) {
+                    final @NonNull ProxyServer server) {
         this.plugin = plugin;
         this.configLoader = configLoader;
         this.tablistService = tablistService;

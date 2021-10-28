@@ -16,7 +16,6 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.kyori.adventure.text.minimessage.Template;
-import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import net.luckperms.api.LuckPerms;
 import net.luckperms.api.LuckPermsProvider;
 import net.luckperms.api.model.user.User;
@@ -342,7 +341,6 @@ public class TablistService {
                     final Component currentDisplayName = currentEntry.getDisplayNameComponent().isPresent()
                             ? currentEntry.getDisplayNameComponent().get()
                             : Component.empty();
-
 
                     final Component playerDisplayName = playerEntry.getDisplayNameComponent().isPresent()
                             ? playerEntry.getDisplayNameComponent().get()
