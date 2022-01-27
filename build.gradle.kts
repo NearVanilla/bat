@@ -1,4 +1,4 @@
-    import com.github.jengelman.gradle.plugins.shadow.ShadowPlugin
+import com.github.jengelman.gradle.plugins.shadow.ShadowPlugin
 import net.kyori.indra.IndraPlugin
 
 plugins {
