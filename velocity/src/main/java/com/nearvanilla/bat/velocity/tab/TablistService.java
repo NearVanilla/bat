@@ -9,24 +9,21 @@ import com.nearvanilla.bat.velocity.config.TablistConfig;
 import com.velocitypowered.api.proxy.Player;
 import com.velocitypowered.api.proxy.ProxyServer;
 import com.velocitypowered.api.proxy.ServerConnection;
+import com.velocitypowered.api.proxy.player.TabList;
 import com.velocitypowered.api.proxy.player.TabListEntry;
-import com.velocitypowered.api.proxy.server.RegisteredServer;
-import com.velocitypowered.api.proxy.server.ServerPing;
 import com.velocitypowered.api.scheduler.ScheduledTask;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.kyori.adventure.text.minimessage.Template;
-import net.kyori.adventure.text.minimessage.template.TemplateResolver;
 import net.luckperms.api.LuckPerms;
 import net.luckperms.api.LuckPermsProvider;
 import net.luckperms.api.model.user.User;
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.checkerframework.checker.nullness.qual.NonNull;
-import org.checkerframework.checker.nullness.qual.Nullable;
 
 import java.text.SimpleDateFormat;
-import java.util.Collection;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
@@ -52,11 +49,12 @@ public class TablistService {
     private final @NonNull ConfigLoader configLoader;
     private final @NonNull ProxyServer server;
     private final @NonNull Logger logger;
-    private final @NonNull Map<String, Tablist> tablistMap;
-    private final @NonNull Map<String, ServerPing> pingMap;
     private final @NonNull LuckPerms luckPerms;
+    private final @NonNull ServerDataProvider serverDataProvider;
 
-    private @MonotonicNonNull ScheduledTask pingUpdateTask;
+    private final @NonNull Map<String, Tablist> tablistMap;
+    private @MonotonicNonNull Tablist defaultTablist;
+
     private @MonotonicNonNull ScheduledTask tablistUpdateTask;
     private @MonotonicNonNull PluginConfig config;
 
@@ -64,229 +62,149 @@ public class TablistService {
     /**
      * Constructs {@code TablistService}
      *
-     * @param configLoader the config loader
-     * @param server       the server list
-     * @param logger       the logger
+     * @param plugin             the plugin
+     * @param configLoader       the config loader
+     * @param serverDataProvider the server data provider
+     * @param server             the server list
+     * @param logger             the logger
      */
     @Inject
     public TablistService(final @NonNull BatVelocityPlugin plugin,
                           final @NonNull ConfigLoader configLoader,
+                          final @NonNull ServerDataProvider serverDataProvider,
                           final @NonNull ProxyServer server,
                           final @NonNull Logger logger) {
         this.plugin = plugin;
         this.configLoader = configLoader;
-        this.tablistMap = new ConcurrentHashMap<>();
-        this.pingMap = new ConcurrentHashMap<>();
+        this.serverDataProvider = serverDataProvider;
         this.logger = logger;
         this.server = server;
-        this.miniMessage = MiniMessage.miniMessage();
+        this.miniMessage = MiniMessage.get();
         this.luckPerms = LuckPermsProvider.get();
+        this.tablistMap = new ConcurrentHashMap<>();
     }
 
     /**
      * Enables the tablist service.
      */
     public void enable() {
+        if (this.defaultTablist != null) {
+            for (final Player player : this.server.getAllPlayers()) {
+                this.defaultTablist.removePlayer(player);
+            }
+        }
+
+        this.tablistMap.clear();
+
         this.config = configLoader.batConfig();
         for (final var entry : this.config.tablists.entrySet()) {
             final String id = entry.getKey();
             final TablistConfig tablistConfig = entry.getValue();
             final Tablist tablist = new Tablist(
+                    this, this.serverDataProvider,
                     tablistConfig.headerFormatStrings,
                     tablistConfig.footerFormatStrings,
-                    tablistConfig.sortType
+                    tablistConfig.sortType,
+                    this.config.serverSortPriorities,
+                    this.config.groupSortPriorities
             );
             this.tablistMap.put(id, tablist);
         }
 
-        this.pingUpdateTask = server.getScheduler()
-                .buildTask(this.plugin, this::pingServers)
-                .repeat(5L, TimeUnit.SECONDS)
-                .schedule();
+        this.defaultTablist = this.tablistMap.get(this.config.defaultTablist);
+
+        if (this.tablistUpdateTask != null) {
+            this.tablistUpdateTask.cancel();
+        }
 
         this.tablistUpdateTask = server.getScheduler()
                 .buildTask(this.plugin, this::updateTablists)
                 .repeat(this.config.updateFrequency, TimeUnit.MILLISECONDS)
                 .schedule();
 
+        if (this.defaultTablist != null) {
+            for (final Player player : this.server.getAllPlayers()) {
+                this.defaultTablist.addPlayer(player);
+            }
+        }
     }
 
     /**
-     * Disables the tablist service
-     */
-    public void disable() {
-        this.tablistUpdateTask.cancel();
-        this.pingUpdateTask.cancel();
-        this.tablistMap.clear();
-    }
-
-    /**
-     * Updates the player's tablist by showing them the appropriate list, or
-     * none if configuration says.
+     * Removes the player from the tablist.
      *
      * @param player the player
      */
-    public void updateTablist(final @NonNull Player player) {
-        final @Nullable Tablist tablist = this.tablist(this.config.defaultTablist);
+    public void handlePlayerLeave(final @NonNull Player player) {
+        this.defaultTablist.removePlayer(player);
+    }
+
+
+    /**
+     * Updates a player's tablist info with their new server connection.
+     *
+     * @param player the player
+     */
+    public void handleServerConnection(final @NonNull Player player) {
+        this.defaultTablist.removePlayer(player);
+        this.defaultTablist.addPlayer(player);
+    }
+
+
+    /**
+     * Returns a player's display name as a component.
+     *
+     * @param uuid the uuid of the player
+     * @return the display name
+     */
+    protected @NonNull Component displayName(final @NonNull UUID uuid) {
+        final Optional<Player> opt = this.server.getPlayer(uuid);
+
+        if (opt.isEmpty()) {
+            return Component.empty();
+        }
+
+        final Player player = opt.get();
+        final List<Template> templates = this.templates(player);
+
+        return this.miniMessage.parse(this.config.playerNameFormat, templates);
+    }
+
+    /**
+     * Returns a player's primary group.
+     *
+     * @param uuid the uuid
+     * @return the group
+     */
+    protected @NonNull String group(final @NonNull UUID uuid) {
+        final User user = this.luckPerms.getUserManager().getUser(uuid);
+
+        if (user == null) {
+            return "";
+        }
+
+        final String group = user.getPrimaryGroup();
+
+        if (group == null) {
+            return "";
+        }
+
+        return group;
+    }
+
+    /**
+     * Updates a player's tablist's header and footer.
+     *
+     * @param player the player
+     */
+    public void updateText(final @NonNull Player player) {
+        final Tablist tablist = this.defaultTablist;
 
         if (tablist == null) {
             this.logger.warning("Tried to show " + player.getUsername() + " a null tablist: '" + this.config.defaultTablist + "'");
             return;
         }
 
-        this.showTablist(player, tablist);
-    }
-
-    /**
-     * Shows a tablist to the player.
-     *
-     * @param player  the player
-     * @param tablist the tablist
-     */
-    public void showTablist(final @NonNull Player player, final @NonNull Tablist tablist) {
-        this.showText(player, tablist);
-        this.updatePlayers(player, tablist);
-    }
-
-    /**
-     * Returns the tablist with the given id. Null if none exists.
-     *
-     * @param id the id
-     * @return the tablist
-     */
-    public @Nullable Tablist tablist(final @NonNull String id) {
-        return this.tablistMap.get(id);
-    }
-
-    /**
-     * Generates placeholder templates for the provided player.
-     *
-     * @param player the player
-     * @param server the server
-     * @return the template list
-     */
-    private @NonNull List<Template> generateTemplates(final @NonNull Player player,
-                                                      final @NonNull ProxyServer server) {
-
-        final Optional<ServerConnection> connectionOpt = player.getCurrentServer();
-
-        int maxPlayers = 0;
-        int onlinePlayers = 0;
-        @NonNull Component motd = Component.empty();
-
-        if (connectionOpt.isPresent()) {
-            final ServerConnection connection = connectionOpt.get();
-            final String name = connection.getServerInfo().getName();
-
-            maxPlayers = this.getMaxPlayers(name);
-            onlinePlayers = this.getPlayers(name);
-            motd = this.getMotd(name);
-        }
-
-        final Date now = new Date();
-
-        final String groupCodeFormat = this.groupCode(player);
-        final String serverCodeFormat = this.serverCode(player);
-
-        return List.of(
-                Template.template("groupcode", groupCodeFormat),
-                Template.template("servercode", serverCodeFormat),
-                Template.template("proxycount", Integer.toString(server.getPlayerCount())),
-                Template.template("proxymax", Integer.toString(server.getConfiguration().getShowMaxPlayers())),
-                Template.template("proxymotd", server.getConfiguration().getMotd()),
-                Template.template("servercount", Integer.toString(onlinePlayers)),
-                Template.template("servermax", Integer.toString(maxPlayers)),
-                Template.template("servermotd", motd),
-                Template.template("playerping", Long.toString(player.getPing())),
-                Template.template("playeruuid", player.getUniqueId().toString()),
-                Template.template("playername", player.getUsername()),
-                Template.template("playerip", player.getRemoteAddress().getAddress().getHostAddress()),
-                Template.template("time", TIME_FORMAT.format(now)),
-                Template.template("date", DATE_FORMAT.format(now)),
-                Template.template("datetime", DATETIME_FORMAT.format(now))
-        );
-    }
-
-    /**
-     * Pings all servers and stores the ping information in a map.
-     */
-    private void pingServers() {
-        final var servers = this.server.getAllServers();
-
-        for (final RegisteredServer server : servers) {
-            server.ping().thenAcceptAsync(ping -> this.pingMap.put(server.getServerInfo().getName(), ping));
-        }
-    }
-
-    /**
-     * Returns the MOTD from the server.
-     *
-     * @param serverName the server name
-     * @return the name
-     */
-    private @NonNull Component getMotd(final @NonNull String serverName) {
-        if (this.pingMap.containsKey(serverName)) {
-            return this.pingMap.get(serverName).getDescriptionComponent();
-        }
-
-        return Component.text("");
-    }
-
-    /**
-     * Returns {@code serverName}'s max players.
-     *
-     * @param serverName the server name
-     * @return the max players
-     */
-    private int getMaxPlayers(final @NonNull String serverName) {
-        if (this.pingMap.containsKey(serverName)) {
-            final Optional<ServerPing.Players> players = this.pingMap.get(serverName).getPlayers();
-
-            if (players.isPresent()) {
-                return players.get().getMax();
-            }
-        }
-
-        return 0;
-    }
-
-
-    /**
-     * Returns {@code serverName}'s online players.
-     *
-     * @param serverName the server name
-     * @return the online players
-     */
-    private int getPlayers(final @NonNull String serverName) {
-        if (this.pingMap.containsKey(serverName)) {
-            final Optional<ServerPing.Players> players = this.pingMap.get(serverName).getPlayers();
-
-            if (players.isPresent()) {
-                return players.get().getOnline();
-            }
-        }
-
-        return 0;
-    }
-
-    /**
-     * Updates tablists for every player on the proxy.
-     */
-    private void updateTablists() {
-        for (final Player player : this.server.getAllPlayers()) {
-            this.updateTablist(player);
-        }
-    }
-
-    /**
-     * Shows the tablist's text to the player.
-     *
-     * @param player  the player
-     * @param tablist the tablist
-     */
-    private void showText(final @NonNull Player player,
-                          final @NonNull Tablist tablist) {
-        final List<Template> templates = this.generateTemplates(player, this.server);
+        final List<Template> templates = this.templates(player);
 
         final List<String> footerFormatStrings = tablist.footerFormatStrings();
         final TextComponent.Builder footer = Component.text();
@@ -294,7 +212,7 @@ public class TablistService {
         final Iterator<String> footerIt = footerFormatStrings.iterator();
 
         while (footerIt.hasNext()) {
-            footer.append(this.miniMessage.deserialize(footerIt.next(), TemplateResolver.templates(templates)));
+            footer.append(this.miniMessage.parse(footerIt.next(), templates));
 
             if (footerIt.hasNext()) {
                 footer.append(Component.newline());
@@ -307,7 +225,7 @@ public class TablistService {
         final Iterator<String> headerIt = headerFormatStrings.iterator();
 
         while (headerIt.hasNext()) {
-            header.append(this.miniMessage.deserialize(headerIt.next(), TemplateResolver.templates(templates)));
+            header.append(this.miniMessage.parse(headerIt.next(), templates));
 
             if (headerIt.hasNext()) {
                 header.append(Component.newline());
@@ -318,33 +236,49 @@ public class TablistService {
     }
 
     /**
-     * Updates the names of players in the tablist.
+     * Generates placeholder templates for the provided player.
      *
-     * @param player  the player
-     * @param tablist the tablist
+     * @param player the player
+     * @return the template list
      */
-    private void updatePlayers(final @NonNull Player player,
-                               final @NonNull Tablist tablist) {
-        final Collection<TabListEntry> entries = player.getTabList().getEntries();
+    private @NonNull List<Template> templates(final @NonNull Player player) {
+        final Optional<ServerConnection> connectionOpt = player.getCurrentServer();
 
-        for (TabListEntry entry : entries) {
-            final UUID uuid = entry.getProfile().getId();
-            final Optional<Player> otherPlayerOpt = this.server.getPlayer(uuid);
+        int maxPlayers = 0;
+        int onlinePlayers = 0;
+        @NonNull Component motd = Component.empty();
 
-            if (otherPlayerOpt.isPresent()) {
-                final Player otherPlayer = otherPlayerOpt.get();
+        if (connectionOpt.isPresent()) {
+            final ServerConnection connection = connectionOpt.get();
+            final String name = connection.getServerInfo().getName();
 
-                final TemplateResolver resolver = TemplateResolver.templates(this.generateTemplates(otherPlayer, this.server));
-                final String groupCode = (String) resolver.resolve("groupcode").value();
-                final String serverCode = (String) resolver.resolve("servercode").value();
-
-                final String format = this.config.playerNameFormat
-                        .replace("<groupcode>", groupCode)
-                        .replace("<servercode>", serverCode);
-
-                entry.setDisplayName(this.miniMessage.deserialize(format, resolver));
-            }
+            maxPlayers = this.serverDataProvider.getMaxPlayers(name);
+            onlinePlayers = this.serverDataProvider.getPlayers(name);
+            motd = this.serverDataProvider.getMotd(name);
         }
+
+        final Date now = new Date();
+
+        final String groupCodeFormat = this.groupCode(player);
+        final String serverCodeFormat = this.serverCode(player);
+
+        return List.of(
+                Template.of("groupcode", this.miniMessage.parse(groupCodeFormat)),
+                Template.of("servercode", this.miniMessage.parse(serverCodeFormat)),
+                Template.of("proxycount", Integer.toString(server.getPlayerCount())),
+                Template.of("proxymax", Integer.toString(server.getConfiguration().getShowMaxPlayers())),
+                Template.of("proxymotd", server.getConfiguration().getMotd()),
+                Template.of("servercount", Integer.toString(onlinePlayers)),
+                Template.of("servermax", Integer.toString(maxPlayers)),
+                Template.of("servermotd", motd),
+                Template.of("playerping", Long.toString(player.getPing())),
+                Template.of("playeruuid", player.getUniqueId().toString()),
+                Template.of("playername", player.getUsername()),
+                Template.of("playerip", player.getRemoteAddress().getAddress().getHostAddress()),
+                Template.of("time", TIME_FORMAT.format(now)),
+                Template.of("date", DATE_FORMAT.format(now)),
+                Template.of("datetime", DATETIME_FORMAT.format(now))
+        );
     }
 
     /**
@@ -385,6 +319,59 @@ public class TablistService {
         final String serverName = serverConnection.getServerInfo().getName();
 
         return serverCodes.getOrDefault(serverName, "");
+    }
+
+    /**
+     * Updates every player's tablist on the network.
+     */
+    private void updateTablists() {
+        for (final Player player : this.server.getAllPlayers()) {
+            this.updateText(player);
+
+            final TabList tabList = player.getTabList();
+
+            final List<TabListEntry> currentEntries = this.defaultTablist.entries(tabList);
+            final List<TabListEntry> entries = new ArrayList<>(tabList.getEntries());
+
+            boolean equals = false;
+
+            if (currentEntries.size() == entries.size()) {
+                boolean invalidated = false;
+
+                for (int i = 0; i < currentEntries.size(); i++) {
+                    final TabListEntry currentEntry = currentEntries.get(i);
+                    final TabListEntry playerEntry = entries.get(i);
+
+                    final Component currentDisplayName = currentEntry.getDisplayNameComponent().isPresent()
+                            ? currentEntry.getDisplayNameComponent().get()
+                            : Component.empty();
+
+                    final Component playerDisplayName = playerEntry.getDisplayNameComponent().isPresent()
+                            ? playerEntry.getDisplayNameComponent().get()
+                            : Component.empty();
+
+                    if (!playerDisplayName.equals(currentDisplayName)) {
+                        invalidated = true;
+                        break;
+                    }
+                }
+
+                equals = !invalidated;
+            }
+
+            if (!equals) {
+                final TabList newTabList = player.getTabList();
+                final List<TabListEntry> newEntries = this.defaultTablist.entries(newTabList);
+
+                for (final TabListEntry entry : newTabList.getEntries()) {
+                    newTabList.removeEntry(entry.getProfile().getId());
+                }
+
+                for (final TabListEntry currentEntry : newEntries) {
+                    newTabList.addEntry(currentEntry);
+                }
+            }
+        }
     }
 
 }
