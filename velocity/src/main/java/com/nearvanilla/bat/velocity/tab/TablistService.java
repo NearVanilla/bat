@@ -289,16 +289,7 @@ public class TablistService {
      */
     private @NonNull String groupCode(final @NonNull Player player) {
         final Map<String, String> groupCodes = this.config.groupCodes;
-
-        final User user = this.luckPerms.getUserManager().getUser(player.getUniqueId());
-
-        if (user == null) {
-            return "";
-        }
-
-        final String group = this.luckPerms.getUserManager().getUser(player.getUniqueId()).getPrimaryGroup();
-
-        return groupCodes.getOrDefault(group, "");
+        return groupCodes.getOrDefault(this.group(player.getUniqueId()), "");
     }
 
     /**
@@ -336,8 +327,6 @@ public class TablistService {
             boolean equals = false;
 
             if (currentEntries.size() == entries.size()) {
-                boolean invalidated = false;
-
                 for (int i = 0; i < currentEntries.size(); i++) {
                     final TabListEntry currentEntry = currentEntries.get(i);
                     final TabListEntry playerEntry = entries.get(i);
@@ -351,12 +340,10 @@ public class TablistService {
                             : Component.empty();
 
                     if (!playerDisplayName.equals(currentDisplayName)) {
-                        invalidated = true;
+                        equals = true;
                         break;
                     }
                 }
-
-                equals = !invalidated;
             }
 
             if (!equals) {
