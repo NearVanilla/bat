@@ -21,8 +21,8 @@ import org.slf4j.Logger;
 @Plugin(
         id = "bat",
         name = "bat",
-        version = "1.0.0",
-        authors = {"Bluely_"},
+        version = "1.0.1",
+        authors = {"Bluely_", "Prof_Bloodstone"},
         description = "Basic, awesome TAB plugin",
         url = "nearvanilla.com"
 )

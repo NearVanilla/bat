@@ -19,11 +19,15 @@ import net.kyori.adventure.text.minimessage.Template;
 import net.luckperms.api.LuckPerms;
 import net.luckperms.api.LuckPermsProvider;
 import net.luckperms.api.model.user.User;
+import net.luckperms.api.query.Flag;
+import net.luckperms.api.query.QueryOptions;
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.checkerframework.checker.nullness.qual.NonNull;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import static java.util.stream.Collectors.toUnmodifiableList;
+import java.util.Collection;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
@@ -192,6 +196,23 @@ public class TablistService {
     }
 
     /**
+     * Returns player's groups.
+     *
+     * @param uuid the uuid
+     * @return the collection of group names
+     */
+    protected @NonNull Collection<String> groups(final @NonNull UUID uuid) {
+        final User user = this.luckPerms.getUserManager().getUser(uuid);
+
+        if (user == null) {
+            return new ArrayList<String>();
+        }
+
+        return user.getInheritedGroups(QueryOptions.defaultContextualOptions().toBuilder().flag(Flag.RESOLVE_INHERITANCE, true).build())
+            .stream().map( item -> item.getName()).collect(toUnmodifiableList());
+    }
+
+    /**
      * Updates a player's tablist's header and footer.
      *
      * @param player the player
@@ -289,7 +310,15 @@ public class TablistService {
      */
     private @NonNull String groupCode(final @NonNull Player player) {
         final Map<String, String> groupCodes = this.config.groupCodes;
-        return groupCodes.getOrDefault(this.group(player.getUniqueId()), "");
+
+        String result = "";
+        for (final String group: this.groups(player.getUniqueId())) {
+           result = groupCodes.getOrDefault(group, "");
+           if (result != "") {
+               return result;
+           }
+        }
+        return result;
     }
 
     /**
