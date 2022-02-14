@@ -66,9 +66,8 @@ public class BatVelocityPlugin {
 
     @Subscribe
     public void onGroupChange(final @NonNull UserDataRecalculateEvent event) {
-        event.getData()
-                .getMetaData()
-                .getPrimaryGroup();
+        server.getPlayer(event.getUser().getUniqueId())
+                .ifPresent(value -> this.tablistService.handleServerConnection(value));
     }
 
     public void enable() {
