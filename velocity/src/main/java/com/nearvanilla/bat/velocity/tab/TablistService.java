@@ -18,6 +18,7 @@ import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.kyori.adventure.text.minimessage.Template;
 import net.luckperms.api.LuckPerms;
 import net.luckperms.api.LuckPermsProvider;
+import net.luckperms.api.model.group.Group;
 import net.luckperms.api.model.user.User;
 import net.luckperms.api.query.Flag;
 import net.luckperms.api.query.QueryOptions;
@@ -105,7 +106,7 @@ public class TablistService {
             final String id = entry.getKey();
             final TablistConfig tablistConfig = entry.getValue();
             final Tablist tablist = new Tablist(
-                    this, this.serverDataProvider,
+                    this, this.server,
                     tablistConfig.headerFormatStrings,
                     tablistConfig.footerFormatStrings,
                     tablistConfig.sortType,
@@ -208,8 +209,8 @@ public class TablistService {
             return new ArrayList<String>();
         }
 
-        return user.getInheritedGroups(QueryOptions.defaultContextualOptions().toBuilder().flag(Flag.RESOLVE_INHERITANCE, true).build())
-            .stream().map( item -> item.getName()).collect(toUnmodifiableList());
+        return user.getInheritedGroups(Const.LP_QUERY_RECURSIVE)
+                .stream().map(Group::getName).toList();
     }
 
     /**

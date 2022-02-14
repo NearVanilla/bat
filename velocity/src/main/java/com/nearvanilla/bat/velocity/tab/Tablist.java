@@ -1,6 +1,7 @@
 package com.nearvanilla.bat.velocity.tab;
 
 import com.velocitypowered.api.proxy.Player;
+import com.velocitypowered.api.proxy.ProxyServer;
 import com.velocitypowered.api.proxy.player.TabList;
 import com.velocitypowered.api.proxy.player.TabListEntry;
 import com.velocitypowered.api.util.GameProfile;
@@ -12,36 +13,31 @@ import java.util.List;
 public class Tablist {
 
     private final @NonNull TablistService tablistService;
-    private final @NonNull ServerDataProvider serverDataProvider;
     private final @NonNull List<String> headerFormatStrings;
     private final @NonNull List<String> footerFormatStrings;
-    private final @NonNull SortType sortType;
+    private final GameProfileSorter.@NonNull SortType sortType;
     private final @NonNull List<GameProfile> profileEntries;
-    private final @NonNull List<String> serverSortPriorities;
-    private final @NonNull List<String> groupSortPriorities;
+    private final @NonNull GameProfileSorter profileSorter;
 
     /**
      * Constructs {@code Tablist}.
      *
      * @param tablistService      the tablist service
-     * @param serverDataProvider  the server data provider
      * @param headerFormatStrings a list containing the tablist's header
      * @param footerFormatStrings a list containing the tablist's footer
      * @param sortType            the tablist's sorting type
      */
     public Tablist(final @NonNull TablistService tablistService,
-                   final @NonNull ServerDataProvider serverDataProvider,
+                   final @NonNull ProxyServer proxyServer,
                    final @NonNull List<String> headerFormatStrings,
                    final @NonNull List<String> footerFormatStrings,
-                   final @NonNull SortType sortType,
+                   final GameProfileSorter.@NonNull SortType sortType,
                    final @NonNull List<String> serverSortPriorities,
                    final @NonNull List<String> groupSortPriorities) {
         this.tablistService = tablistService;
-        this.serverDataProvider = serverDataProvider;
         this.headerFormatStrings = headerFormatStrings;
         this.footerFormatStrings = footerFormatStrings;
-        this.serverSortPriorities = serverSortPriorities;
-        this.groupSortPriorities = groupSortPriorities;
+        this.profileSorter = new GameProfileSorter(groupSortPriorities, serverSortPriorities, proxyServer);
 
         this.sortType = sortType;
         this.profileEntries = new ArrayList<>();
@@ -64,7 +60,7 @@ public class Tablist {
     public @NonNull List<TabListEntry> entries(final @NonNull TabList tabList) {
         final List<TabListEntry> entries = new ArrayList<>();
 
-        for (final GameProfile gameProfile : profileEntries) {
+        for (final GameProfile gameProfile : profileSorter.sorted(profileEntries, sortType)) {
             entries.add(TabListEntry.builder()
                     .latency(10)
                     .tabList(tabList)
@@ -89,7 +85,7 @@ public class Tablist {
         return this.footerFormatStrings;
     }
 
-    public @NonNull SortType sortType() {
+    public GameProfileSorter.@NonNull SortType sortType() {
         return this.sortType;
     }
 }

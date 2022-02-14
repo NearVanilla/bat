@@ -1,6 +1,6 @@
 package com.nearvanilla.bat.velocity.config;
 
-import com.nearvanilla.bat.velocity.tab.SortType;
+import com.nearvanilla.bat.velocity.tab.GameProfileSorter;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.spongepowered.configurate.objectmapping.ConfigSerializable;
 import org.spongepowered.configurate.objectmapping.meta.Comment;
@@ -55,6 +55,6 @@ public class TablistConfig {
             - SERVER (sort by server using configured priorities)
             - GROUP (sort by LuckPerms group using configured priorities)
             """)
-    public @NonNull SortType sortType = SortType.NONE;
+    public GameProfileSorter.@NonNull SortType sortType = GameProfileSorter.SortType.NONE;
 
 }
