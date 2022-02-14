@@ -284,8 +284,8 @@ public class TablistService {
         final String serverCodeFormat = this.serverCode(player);
 
         return List.of(
-                Template.of("groupcode", this.miniMessage.parse(groupCodeFormat)),
-                Template.of("servercode", this.miniMessage.parse(serverCodeFormat)),
+                Template.of("groupcode", groupCodeFormat),
+                Template.of("servercode", serverCodeFormat),
                 Template.of("proxycount", Integer.toString(server.getPlayerCount())),
                 Template.of("proxymax", Integer.toString(server.getConfiguration().getShowMaxPlayers())),
                 Template.of("proxymotd", server.getConfiguration().getMotd()),
@@ -314,7 +314,7 @@ public class TablistService {
         String result = "";
         for (final String group: this.groups(player.getUniqueId())) {
            result = groupCodes.getOrDefault(group, "");
-           if (result != "") {
+           if (!"".equals(result)) {
                return result;
            }
         }
@@ -353,9 +353,9 @@ public class TablistService {
             final List<TabListEntry> currentEntries = this.defaultTablist.entries(tabList);
             final List<TabListEntry> entries = new ArrayList<>(tabList.getEntries());
 
-            boolean equals = false;
+            boolean equals = currentEntries.size() == entries.size();
 
-            if (currentEntries.size() == entries.size()) {
+            if (equals) {
                 for (int i = 0; i < currentEntries.size(); i++) {
                     final TabListEntry currentEntry = currentEntries.get(i);
                     final TabListEntry playerEntry = entries.get(i);
@@ -369,7 +369,7 @@ public class TablistService {
                             : Component.empty();
 
                     if (!playerDisplayName.equals(currentDisplayName)) {
-                        equals = true;
+                        equals = false;
                         break;
                     }
                 }
