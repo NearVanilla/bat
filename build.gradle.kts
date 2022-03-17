@@ -7,7 +7,7 @@ plugins {
 }
 
 group = "com.nearvanilla.bat"
-version = "1.0.1-SNAPSHOT"
+version = "1.0.2-SNAPSHOT"
 
 subprojects {
     apply {

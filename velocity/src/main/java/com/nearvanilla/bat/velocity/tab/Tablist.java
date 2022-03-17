@@ -7,6 +7,7 @@ import com.velocitypowered.api.util.GameProfile;
 import org.checkerframework.checker.nullness.qual.NonNull;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 public class Tablist {
@@ -62,19 +63,18 @@ public class Tablist {
      * @return the list of tablist entries
      */
     public @NonNull List<TabListEntry> entries(final @NonNull TabList tabList) {
-        final List<TabListEntry> entries = new ArrayList<>();
-
-        for (final GameProfile gameProfile : profileEntries) {
-            entries.add(TabListEntry.builder()
+        return profileEntries
+            .stream()
+            .sorted(Comparator.comparing(GameProfile::getName))
+            .map(gameProfile -> 
+                TabListEntry.builder()
                     .latency(10)
                     .tabList(tabList)
                     .profile(gameProfile)
                     .displayName(this.tablistService.displayName(gameProfile.getId()))
                     .gameMode(0)
-                    .build());
-        }
-
-        return entries;
+                    .build()
+            ).toList();
     }
 
     private void insert(final @NonNull GameProfile gameProfile) {
