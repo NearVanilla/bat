@@ -7,7 +7,7 @@ plugins {
 }
 
 group = "com.nearvanilla.bat"
-version = "1.0.2-SNAPSHOT"
+version = "1.1.0-SNAPSHOT"
 
 subprojects {
     apply {
@@ -16,7 +16,7 @@ subprojects {
     }
 
     repositories {
-        maven("https://nexus.velocitypowered.com/repository/maven-public/")
+        maven("https://papermc.io/repo/repository/maven-public/")
         mavenCentral()
         mavenLocal()
     }

@@ -15,7 +15,8 @@ import com.velocitypowered.api.scheduler.ScheduledTask;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.minimessage.MiniMessage;
-import net.kyori.adventure.text.minimessage.Template;
+import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder;
+import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver;
 import net.luckperms.api.LuckPerms;
 import net.luckperms.api.LuckPermsProvider;
 import net.luckperms.api.model.user.User;
@@ -83,7 +84,7 @@ public class TablistService {
         this.serverDataProvider = serverDataProvider;
         this.logger = logger;
         this.server = server;
-        this.miniMessage = MiniMessage.get();
+        this.miniMessage = MiniMessage.miniMessage();
         this.luckPerms = LuckPermsProvider.get();
         this.tablistMap = new ConcurrentHashMap<>();
     }
@@ -168,9 +169,9 @@ public class TablistService {
         }
 
         final Player player = opt.get();
-        final List<Template> templates = this.templates(player);
+        final TagResolver tagResolver = this.tagResolver(player);
 
-        return this.miniMessage.parse(this.config.playerNameFormat, templates);
+        return this.miniMessage.deserialize(this.config.playerNameFormat, tagResolver);
     }
 
     /**
@@ -225,7 +226,7 @@ public class TablistService {
             return;
         }
 
-        final List<Template> templates = this.templates(player);
+        final TagResolver tagResolver = this.tagResolver(player);
 
         final List<String> footerFormatStrings = tablist.footerFormatStrings();
         final TextComponent.Builder footer = Component.text();
@@ -233,7 +234,7 @@ public class TablistService {
         final Iterator<String> footerIt = footerFormatStrings.iterator();
 
         while (footerIt.hasNext()) {
-            footer.append(this.miniMessage.parse(footerIt.next(), templates));
+            footer.append(this.miniMessage.deserialize(footerIt.next(), tagResolver));
 
             if (footerIt.hasNext()) {
                 footer.append(Component.newline());
@@ -246,7 +247,7 @@ public class TablistService {
         final Iterator<String> headerIt = headerFormatStrings.iterator();
 
         while (headerIt.hasNext()) {
-            header.append(this.miniMessage.parse(headerIt.next(), templates));
+            header.append(this.miniMessage.deserialize(headerIt.next(), tagResolver));
 
             if (headerIt.hasNext()) {
                 header.append(Component.newline());
@@ -257,12 +258,12 @@ public class TablistService {
     }
 
     /**
-     * Generates placeholder templates for the provided player.
+     * Generates placeholder tagResolver for the provided player.
      *
      * @param player the player
      * @return the template list
      */
-    private @NonNull List<Template> templates(final @NonNull Player player) {
+    private @NonNull TagResolver tagResolver(final @NonNull Player player) {
         final Optional<ServerConnection> connectionOpt = player.getCurrentServer();
 
         int maxPlayers = 0;
@@ -283,23 +284,23 @@ public class TablistService {
         final String groupCodeFormat = this.groupCode(player);
         final String serverCodeFormat = this.serverCode(player);
 
-        return List.of(
-                Template.of("groupcode", groupCodeFormat),
-                Template.of("servercode", serverCodeFormat),
-                Template.of("proxycount", Integer.toString(server.getPlayerCount())),
-                Template.of("proxymax", Integer.toString(server.getConfiguration().getShowMaxPlayers())),
-                Template.of("proxymotd", server.getConfiguration().getMotd()),
-                Template.of("servercount", Integer.toString(onlinePlayers)),
-                Template.of("servermax", Integer.toString(maxPlayers)),
-                Template.of("servermotd", motd),
-                Template.of("playerping", Long.toString(player.getPing())),
-                Template.of("playeruuid", player.getUniqueId().toString()),
-                Template.of("playername", player.getUsername()),
-                Template.of("playerip", player.getRemoteAddress().getAddress().getHostAddress()),
-                Template.of("time", TIME_FORMAT.format(now)),
-                Template.of("date", DATE_FORMAT.format(now)),
-                Template.of("datetime", DATETIME_FORMAT.format(now))
-        );
+        return TagResolver.resolver(List.of(
+                Placeholder.parsed("groupcode", groupCodeFormat),
+                Placeholder.parsed("servercode", serverCodeFormat),
+                Placeholder.unparsed("proxycount", Integer.toString(server.getPlayerCount())),
+                Placeholder.unparsed("proxymax", Integer.toString(server.getConfiguration().getShowMaxPlayers())),
+                Placeholder.component("proxymotd", server.getConfiguration().getMotd()),
+                Placeholder.unparsed("servercount", Integer.toString(onlinePlayers)),
+                Placeholder.unparsed("servermax", Integer.toString(maxPlayers)),
+                Placeholder.component("servermotd", motd),
+                Placeholder.unparsed("playerping", Long.toString(player.getPing())),
+                Placeholder.unparsed("playeruuid", player.getUniqueId().toString()),
+                Placeholder.unparsed("playername", player.getUsername()),
+                Placeholder.unparsed("playerip", player.getRemoteAddress().getAddress().getHostAddress()),
+                Placeholder.unparsed("time", TIME_FORMAT.format(now)),
+                Placeholder.unparsed("date", DATE_FORMAT.format(now)),
+                Placeholder.unparsed("datetime", DATETIME_FORMAT.format(now))
+        ));
     }
 
     /**

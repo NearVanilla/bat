@@ -6,7 +6,6 @@ dependencies {
 
     implementation(libs.cloud.velocity)
     implementation(libs.cloud.annotations)
-    implementation(libs.adventure.minimessage)
     implementation(libs.configurate.hocon)
 }
 
