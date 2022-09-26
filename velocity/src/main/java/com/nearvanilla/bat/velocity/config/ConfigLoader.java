@@ -35,6 +35,7 @@ public class ConfigLoader {
         - <playeruuid> - the player's uuid
         - <playername> - the player's name
         - <playerip> - the player's ip
+        - <playerserver> - the player's connected server name
         """;
 
     private final @NonNull BatVelocityPlugin plugin;
