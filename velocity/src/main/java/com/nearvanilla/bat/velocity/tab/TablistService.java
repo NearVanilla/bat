@@ -269,6 +269,7 @@ public class TablistService {
         int maxPlayers = 0;
         int onlinePlayers = 0;
         @NonNull Component motd = Component.empty();
+        @NonNull String serverName = "";
 
         if (connectionOpt.isPresent()) {
             final ServerConnection connection = connectionOpt.get();
@@ -277,6 +278,7 @@ public class TablistService {
             maxPlayers = this.serverDataProvider.getMaxPlayers(name);
             onlinePlayers = this.serverDataProvider.getPlayers(name);
             motd = this.serverDataProvider.getMotd(name);
+            serverName = name;
         }
 
         final Date now = new Date();
@@ -297,6 +299,7 @@ public class TablistService {
                 Placeholder.unparsed("playeruuid", player.getUniqueId().toString()),
                 Placeholder.unparsed("playername", player.getUsername()),
                 Placeholder.unparsed("playerip", player.getRemoteAddress().getAddress().getHostAddress()),
+                Placeholder.unparsed("playerserver", serverName),
                 Placeholder.unparsed("time", TIME_FORMAT.format(now)),
                 Placeholder.unparsed("date", DATE_FORMAT.format(now)),
                 Placeholder.unparsed("datetime", DATETIME_FORMAT.format(now))
