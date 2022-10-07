@@ -22,14 +22,15 @@ By default, bat provides a set of placeholders using [MiniMessage's template sys
 
 `<date>`, `<time>`, and `<datetime>` are parsed using Java's [SimpleDateFormat](https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/text/SimpleDateFormat.html), meaning that the players will be seeing the server's local time, not their own local time.
 
-| Template Tag  | Description                                                                                                                          | Example Value                                  |
-|---------------|--------------------------------------------------------------------------------------------------------------------------------------|------------------------------------------------|
+| Template Tag    | Description                                                                                                                          | Example Value                                  |
+|-----------------|--------------------------------------------------------------------------------------------------------------------------------------|------------------------------------------------|
 | `<proxycount>`  | The amount of players on the proxy.                                                                                                  | `10`: int                                      |
 | `<proxymax>`    | The maximum amount of players allowed on the proxy. This is the same as the value of 'show-max-players' in Velocity's configuration. | `100`: int                                     |
 | `<proxymotd>`   | The proxy's MOTD component.                                                                                                          | `A Proxy Server`: Component                    |
 | `<servercount>` | The amount of players on the local server.                                                                                           | `10`: int                                      |
 | `<servermax>`   | The maximum amount of players allowed on the local server.                                                                           | `100`: int                                     |
 | `<servermotd>`  | The local server's MOTD component.                                                                                                   | `A Minecraft Server`: Component                |
+| `<servername>`  | The local server's name that was registered with Velocity.                                                                           |                                                |
 | `<playerping>`  | The player's ping to the proxy. Will just return the number without 'ms' or anything.                                                | `150`: int                                     |
 | `<playeruuid>`  | The player's UUID, in the dash-separated format.                                                                                     | `b4dc78cf-6aeb-439f-8c68-4b5b2a4e340c`: String |
 | `<playername>`  | The player's username.                                                                                                               | `Bluely_`: String                              |
