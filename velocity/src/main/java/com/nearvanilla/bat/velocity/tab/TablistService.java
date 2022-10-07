@@ -97,7 +97,7 @@ public class TablistService {
             final String id = entry.getKey();
             final TablistConfig tablistConfig = entry.getValue();
             final Tablist tablist = new Tablist(
-                    this, this.serverDataProvider,
+                    this.logger, this, this.serverDataProvider,
                     tablistConfig.headerFormatStrings,
                     tablistConfig.footerFormatStrings,
                     tablistConfig.sortType,
