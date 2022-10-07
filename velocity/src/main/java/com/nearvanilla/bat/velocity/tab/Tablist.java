@@ -48,37 +48,43 @@ public class Tablist {
         this.profileEntries = new ArrayList<>();
     }
 
+    /**
+     * Adds a player to the tablist.
+     *
+     * @param player the player
+     */
     public void addPlayer(final @NonNull Player player) {
-        this.insert(player.getGameProfile());
+        this.profileEntries.add(player.getGameProfile());
     }
 
+    /**
+     * Removes the player from the tablist.
+     *
+     * @param player the player
+     */
     public void removePlayer(final @NonNull Player player) {
         this.profileEntries.removeIf(profile -> profile.getId().equals(player.getUniqueId()));
     }
 
     /**
-     * Generates {@link TabListEntry} for the tablist.
+     * Generates a list of {@link TabListEntry}s for the tablist.
      *
      * @param tabList the tablist
      * @return the list of tablist entries
      */
     public @NonNull List<TabListEntry> entries(final @NonNull TabList tabList) {
         return profileEntries
-            .stream()
-            .sorted(Comparator.comparing(GameProfile::getName))
-            .map(gameProfile -> 
-                TabListEntry.builder()
-                    .latency(10)
-                    .tabList(tabList)
-                    .profile(gameProfile)
-                    .displayName(this.tablistService.displayName(gameProfile.getId()))
-                    .gameMode(0)
-                    .build()
-            ).toList();
-    }
-
-    private void insert(final @NonNull GameProfile gameProfile) {
-        this.profileEntries.add(gameProfile);
+                .stream()
+                .sorted(Comparator.comparing(GameProfile::getName))
+                .map(gameProfile ->
+                        TabListEntry.builder()
+                                .latency(10)
+                                .tabList(tabList)
+                                .profile(gameProfile)
+                                .displayName(this.tablistService.displayName(gameProfile.getId()))
+                                .gameMode(3)
+                                .build()
+                ).toList();
     }
 
     public @NonNull List<String> headerFormatStrings() {

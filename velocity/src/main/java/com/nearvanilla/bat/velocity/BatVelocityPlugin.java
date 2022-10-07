@@ -3,6 +3,7 @@ package com.nearvanilla.bat.velocity;
 import com.google.inject.Inject;
 import com.google.inject.Injector;
 import com.nearvanilla.bat.velocity.command.Commands;
+import com.nearvanilla.bat.velocity.listener.LuckPermsListener;
 import com.nearvanilla.bat.velocity.tab.TablistService;
 import com.velocitypowered.api.event.Subscribe;
 import com.velocitypowered.api.event.connection.DisconnectEvent;
@@ -10,7 +11,6 @@ import com.velocitypowered.api.event.player.ServerPostConnectEvent;
 import com.velocitypowered.api.event.proxy.ProxyInitializeEvent;
 import com.velocitypowered.api.plugin.Plugin;
 import com.velocitypowered.api.proxy.ProxyServer;
-import net.luckperms.api.event.user.UserDataRecalculateEvent;
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.slf4j.Logger;
@@ -64,16 +64,15 @@ public class BatVelocityPlugin {
         this.tablistService.handlePlayerLeave(event.getPlayer());
     }
 
-    @Subscribe
-    public void onGroupChange(final @NonNull UserDataRecalculateEvent event) {
-        server.getPlayer(event.getUser().getUniqueId())
-                .ifPresent(value -> this.tablistService.handleServerConnection(value));
-    }
-
     public void enable() {
         this.tablistService = this.injector.getInstance(TablistService.class);
         this.tablistService.enable();
+
         this.commands = this.injector.getInstance(Commands.class);
         this.commands.register();
+
+        if (this.server.getPluginManager().isLoaded("LuckPerms")) {
+            this.server.getEventManager().register(this, this.injector.getInstance(LuckPermsListener.class));
+        }
     }
 }
