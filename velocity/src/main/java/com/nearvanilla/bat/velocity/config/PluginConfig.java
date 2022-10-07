@@ -31,7 +31,7 @@ public class PluginConfig {
     @Comment("""
             The format of a player's name in the tablist. Supports MiniMessage and every bat placeholder.
             """)
-    public @NonNull String playerNameFormat = "<groupcode><name><servercode>";
+    public @NonNull String playerNameFormat = "<groupcode><playername><servercode>";
 
     @Comment("""
             When the tablist's sort type is 'SERVER', this list is used to priorities players
