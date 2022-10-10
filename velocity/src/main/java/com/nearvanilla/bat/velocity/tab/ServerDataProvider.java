@@ -1,12 +1,16 @@
 package com.nearvanilla.bat.velocity.tab;
 
 import com.nearvanilla.bat.velocity.BatVelocityPlugin;
+import com.nearvanilla.bat.velocity.tab.group.EmptyGroupProvider;
+import com.nearvanilla.bat.velocity.tab.group.GroupProvider;
+import com.nearvanilla.bat.velocity.tab.group.LuckPermsGroupProvider;
 import com.velocitypowered.api.proxy.Player;
 import com.velocitypowered.api.proxy.ProxyServer;
 import com.velocitypowered.api.proxy.server.RegisteredServer;
 import com.velocitypowered.api.proxy.server.ServerPing;
 import com.velocitypowered.api.scheduler.ScheduledTask;
 import net.kyori.adventure.text.Component;
+import net.luckperms.api.LuckPermsProvider;
 import org.checkerframework.checker.nullness.qual.NonNull;
 
 import javax.inject.Inject;
@@ -25,6 +29,7 @@ public class ServerDataProvider {
     private final @NonNull Map<String, ServerPing> pingMap;
     private final @NonNull Map<UUID, Integer> playerPingMap;
     private final @NonNull ScheduledTask updateTask;
+    private final @NonNull GroupProvider groupProvider;
 
     @Inject
     public ServerDataProvider(final @NonNull ProxyServer server,
@@ -37,6 +42,20 @@ public class ServerDataProvider {
                 .buildTask(this.plugin, this::update)
                 .repeat(5L, TimeUnit.SECONDS)
                 .schedule();
+        if (this.server.getPluginManager().isLoaded("luckperms")) {
+            this.groupProvider = new LuckPermsGroupProvider(LuckPermsProvider.get());
+        } else {
+            this.groupProvider = new EmptyGroupProvider();
+        }
+    }
+
+    /**
+     * Returns the {@link GroupProvider}.
+     *
+     * @return the {@link GroupProvider}
+     */
+    public @NonNull GroupProvider groupProvider() {
+        return this.groupProvider;
     }
 
     /**

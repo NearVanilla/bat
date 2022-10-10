@@ -27,11 +27,14 @@ public class Tablist {
     /**
      * Constructs {@code Tablist}.
      *
-     * @param tablistService      the tablist service
-     * @param serverDataProvider  the server data provider
-     * @param headerFormatStrings a list containing the tablist's header
-     * @param footerFormatStrings a list containing the tablist's footer
-     * @param sortType            the tablist's sorting type
+     * @param logger               the logger
+     * @param tablistService       the tablist service
+     * @param serverDataProvider   the server data provider
+     * @param headerFormatStrings  a list containing the tablist's header
+     * @param footerFormatStrings  a list containing the tablist's footer
+     * @param sortType             the tablist's sorting type
+     * @param serverSortPriorities the server sort priorities
+     * @param groupSortPriorities  the group sort priorities
      */
     public Tablist(final @NonNull Logger logger,
                    final @NonNull TablistService tablistService,
@@ -52,16 +55,26 @@ public class Tablist {
         this.profileEntries = new ArrayList<>();
     }
 
+    /**
+     * Adds a player to the tablist.
+     *
+     * @param player the player
+     */
     public void addPlayer(final @NonNull Player player) {
-        this.insert(player.getGameProfile());
+        this.profileEntries.add(player.getGameProfile());
     }
 
+    /**
+     * Removes the player from the tablist.
+     *
+     * @param player the player
+     */
     public void removePlayer(final @NonNull Player player) {
         this.profileEntries.removeIf(profile -> profile.getId().equals(player.getUniqueId()));
     }
 
     /**
-     * Generates {@link TabListEntry} for the tablist.
+     * Generates a list of {@link TabListEntry}s for the tablist.
      *
      * @param tabList the tablist
      * @return the list of tablist entries
@@ -79,10 +92,6 @@ public class Tablist {
                                 .gameMode(this.getGameMode(tabList, gameProfile.getId()))
                                 .build()
                 ).toList();
-    }
-
-    private void insert(final @NonNull GameProfile gameProfile) {
-        this.profileEntries.add(gameProfile);
     }
 
     public @NonNull List<String> headerFormatStrings() {

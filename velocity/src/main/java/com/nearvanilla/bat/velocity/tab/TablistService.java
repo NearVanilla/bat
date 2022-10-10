@@ -17,18 +17,11 @@ import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder;
 import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver;
-import net.luckperms.api.LuckPerms;
-import net.luckperms.api.LuckPermsProvider;
-import net.luckperms.api.model.user.User;
-import net.luckperms.api.query.Flag;
-import net.luckperms.api.query.QueryOptions;
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.checkerframework.checker.nullness.qual.NonNull;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import static java.util.stream.Collectors.toUnmodifiableList;
-import java.util.Collection;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
@@ -54,7 +47,6 @@ public class TablistService {
     private final @NonNull ConfigLoader configLoader;
     private final @NonNull ProxyServer server;
     private final @NonNull Logger logger;
-    private final @NonNull LuckPerms luckPerms;
     private final @NonNull ServerDataProvider serverDataProvider;
 
     private final @NonNull Map<String, Tablist> tablistMap;
@@ -85,7 +77,6 @@ public class TablistService {
         this.logger = logger;
         this.server = server;
         this.miniMessage = MiniMessage.miniMessage();
-        this.luckPerms = LuckPermsProvider.get();
         this.tablistMap = new ConcurrentHashMap<>();
     }
 
@@ -172,45 +163,6 @@ public class TablistService {
         final TagResolver tagResolver = this.tagResolver(player);
 
         return this.miniMessage.deserialize(this.config.playerNameFormat, tagResolver);
-    }
-
-    /**
-     * Returns a player's primary group.
-     *
-     * @param uuid the uuid
-     * @return the group
-     */
-    protected @NonNull String group(final @NonNull UUID uuid) {
-        final User user = this.luckPerms.getUserManager().getUser(uuid);
-
-        if (user == null) {
-            return "";
-        }
-
-        final String group = user.getPrimaryGroup();
-
-        if (group == null) {
-            return "";
-        }
-
-        return group;
-    }
-
-    /**
-     * Returns player's groups.
-     *
-     * @param uuid the uuid
-     * @return the collection of group names
-     */
-    protected @NonNull Collection<String> groups(final @NonNull UUID uuid) {
-        final User user = this.luckPerms.getUserManager().getUser(uuid);
-
-        if (user == null) {
-            return new ArrayList<String>();
-        }
-
-        return user.getInheritedGroups(QueryOptions.defaultContextualOptions().toBuilder().flag(Flag.RESOLVE_INHERITANCE, true).build())
-            .stream().map( item -> item.getName()).collect(toUnmodifiableList());
     }
 
     /**
@@ -316,11 +268,11 @@ public class TablistService {
         final Map<String, String> groupCodes = this.config.groupCodes;
 
         String result = "";
-        for (final String group: this.groups(player.getUniqueId())) {
-           result = groupCodes.getOrDefault(group, "");
-           if (!"".equals(result)) {
-               return result;
-           }
+        for (final String group : this.serverDataProvider.groupProvider().groups(player.getUniqueId())) {
+            result = groupCodes.getOrDefault(group, "");
+            if (!"".equals(result)) {
+                return result;
+            }
         }
         return result;
     }
