@@ -38,8 +38,8 @@ import java.util.logging.Logger;
 @Singleton
 public class TablistService {
 
-    private static final @NonNull SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("hh:mm a");
-    private static final @NonNull SimpleDateFormat TIME_FORMAT = new SimpleDateFormat("yyyy/MM/dd");
+    private static final @NonNull SimpleDateFormat TIME_FORMAT = new SimpleDateFormat("hh:mm a");
+    private static final @NonNull SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyy/MM/dd");
     private static final @NonNull SimpleDateFormat DATETIME_FORMAT = new SimpleDateFormat("yyyy/MM/dd hh:mm a");
 
     private final @NonNull BatVelocityPlugin plugin;
