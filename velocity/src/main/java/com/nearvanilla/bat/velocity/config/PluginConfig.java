@@ -34,18 +34,6 @@ public class PluginConfig {
     public @NonNull String playerNameFormat = "<groupcode><playername><servercode>";
 
     @Comment("""
-            When the tablist's sort type is 'SERVER', this list is used to priorities players
-            in the tablist based on the position of their server in this list.
-            """)
-    public @NonNull List<String> serverSortPriorities = List.of("survival", "lobby");
-
-    @Comment("""
-            When the tablist's sort type is 'GROUP', this list is used to priorities players
-            in the tablist based on the position of their group in this list.
-            """)
-    public @NonNull List<String> groupSortPriorities = List.of("admin");
-
-    @Comment("""
             If a player is in a LuckPerms group defined in this map, then the template "<groupcode>" will return it's
             value in this map. Otherwise, "<groupcode>" will return nothing ("").
             """)
