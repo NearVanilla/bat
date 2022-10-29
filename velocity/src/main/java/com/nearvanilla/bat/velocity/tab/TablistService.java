@@ -346,4 +346,9 @@ public class TablistService {
         }
     }
 
+    public int ping(final @NonNull UUID uuid) {
+        final Optional<Player> player = server.getPlayer(uuid);
+        return player.map(Player::getPing).orElse(-1L).intValue();
+    }
+
 }

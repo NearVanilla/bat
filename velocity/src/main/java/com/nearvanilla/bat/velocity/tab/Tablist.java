@@ -85,7 +85,7 @@ public class Tablist {
                 .sorted(Comparator.comparing(GameProfile::getName))
                 .map(gameProfile ->
                         TabListEntry.builder()
-                                .latency(10)
+                                .latency(this.tablistService.ping(gameProfile.getId()))
                                 .tabList(tabList)
                                 .profile(gameProfile)
                                 .displayName(this.tablistService.displayName(gameProfile.getId()))
