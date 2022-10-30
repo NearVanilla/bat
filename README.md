@@ -7,14 +7,18 @@ Basic, awesome TAB plugin.
 #### Requirements
 
 - Java 16+
-- Velocity 3.0.0+
+- The latest **development** version of Velocity *(This plugin does not work on the Stable version!)*
 
-#### Steps
+#### Compilation
 
-1. Download `bat-velocity.jar`.
-2. Move `bat-velocity.jar` to your Velocity server's `plugins/` folder.
-3. If there is no `plugins/bat/` folder, then start your Velocity server to generate the default configuration.
-4. Configure `bat` to your heart's content.
+- Clone this repository to a directory of your choice through running `git clone https://github.com/NearVanilla/bat.git` in your terminal.
+- Change your directory to the `bat` folder through running `cd bat`
+- Run `gradlew build` to compile the project *(Ensure you have the correct version of Java)*.
+- Navigate to the `libs` folder inside of the newly created `build` folder in your File Explorer.
+- Drag the `bat-velocity.jar` file into the `plugins` folder of your Velocity Server.
+- If you do not have a `plugins/bat` folder, then start your Velocity server to generate the default configuration.
+- Configure `bat` to your liking!
+
 
 ## Placeholders
 
