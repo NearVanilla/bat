@@ -1,6 +1,5 @@
 package com.nearvanilla.bat.velocity.config;
 
-import com.nearvanilla.bat.velocity.tab.SortType;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.spongepowered.configurate.objectmapping.ConfigSerializable;
 import org.spongepowered.configurate.objectmapping.meta.Comment;
@@ -47,14 +46,5 @@ public class TablistConfig {
             "<gray>\\<<aqua>playerip</aqua>> - </gray><gray><playerip></gray>",
             ""
     );
-
-    @Comment("""
-            The tablist's sorting type.
-            Possible values:
-            - NONE (let Minecraft handle tablist sorting)
-            - SERVER (sort by server using configured priorities)
-            - GROUP (sort by LuckPerms group using configured priorities)
-            """)
-    public @NonNull SortType sortType = SortType.NONE;
 
 }

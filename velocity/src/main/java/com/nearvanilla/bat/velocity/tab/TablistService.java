@@ -99,10 +99,7 @@ public class TablistService {
             final Tablist tablist = new Tablist(
                     this.logger, this, this.serverDataProvider,
                     tablistConfig.headerFormatStrings,
-                    tablistConfig.footerFormatStrings,
-                    tablistConfig.sortType,
-                    this.config.serverSortPriorities,
-                    this.config.groupSortPriorities
+                    tablistConfig.footerFormatStrings
             );
             this.tablistMap.put(id, tablist);
         }

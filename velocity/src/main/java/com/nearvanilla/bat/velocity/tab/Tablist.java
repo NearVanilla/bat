@@ -19,10 +19,7 @@ public class Tablist {
     private final @NonNull ServerDataProvider serverDataProvider;
     private final @NonNull List<String> headerFormatStrings;
     private final @NonNull List<String> footerFormatStrings;
-    private final @NonNull SortType sortType;
     private final @NonNull List<GameProfile> profileEntries;
-    private final @NonNull List<String> serverSortPriorities;
-    private final @NonNull List<String> groupSortPriorities;
 
     /**
      * Constructs {@code Tablist}.
@@ -32,26 +29,17 @@ public class Tablist {
      * @param serverDataProvider   the server data provider
      * @param headerFormatStrings  a list containing the tablist's header
      * @param footerFormatStrings  a list containing the tablist's footer
-     * @param sortType             the tablist's sorting type
-     * @param serverSortPriorities the server sort priorities
-     * @param groupSortPriorities  the group sort priorities
      */
     public Tablist(final @NonNull Logger logger,
                    final @NonNull TablistService tablistService,
                    final @NonNull ServerDataProvider serverDataProvider,
                    final @NonNull List<String> headerFormatStrings,
-                   final @NonNull List<String> footerFormatStrings,
-                   final @NonNull SortType sortType,
-                   final @NonNull List<String> serverSortPriorities,
-                   final @NonNull List<String> groupSortPriorities) {
+                   final @NonNull List<String> footerFormatStrings) {
         this.logger = logger;
         this.tablistService = tablistService;
         this.serverDataProvider = serverDataProvider;
         this.headerFormatStrings = headerFormatStrings;
         this.footerFormatStrings = footerFormatStrings;
-        this.serverSortPriorities = serverSortPriorities;
-        this.groupSortPriorities = groupSortPriorities;
-        this.sortType = sortType;
         this.profileEntries = new ArrayList<>();
     }
 
@@ -100,10 +88,6 @@ public class Tablist {
 
     public @NonNull List<String> footerFormatStrings() {
         return this.footerFormatStrings;
-    }
-
-    public @NonNull SortType sortType() {
-        return this.sortType;
     }
 
     private int getGameMode(final @NonNull TabList tabList,
