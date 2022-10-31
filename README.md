@@ -8,10 +8,11 @@ Basic, awesome TAB plugin.
 
 - Java 16+
 - The latest **development** version of Velocity *(This plugin does not work on the Stable version!)*
+- Git (This is only required if you intend on cloning the repository through your Terminal)
 
 #### Compilation
 
-- Clone this repository to a directory of your choice through running `git clone https://github.com/NearVanilla/bat.git` in your terminal.
+- Clone this repository to a directory of your choice through running `git clone https://github.com/NearVanilla/bat.git` in your terminal. Alternatively, you can download this repository as a ZIP at the top of this page.
 - Change your directory to the `bat` folder through running `cd bat`
 - Run `gradlew build` to compile the project *(Ensure you have the correct version of Java)*.
 - Navigate to the `libs` folder inside of the newly created `build` folder in your File Explorer.
