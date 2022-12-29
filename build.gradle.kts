@@ -17,6 +17,7 @@ subprojects {
 
     repositories {
         maven("https://papermc.io/repo/repository/maven-public/")
+        maven("https://repo.minebench.de/")
         mavenCentral()
         mavenLocal()
     }

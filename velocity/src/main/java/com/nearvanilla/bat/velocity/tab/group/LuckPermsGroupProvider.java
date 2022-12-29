@@ -7,11 +7,7 @@ import net.luckperms.api.query.Flag;
 import net.luckperms.api.query.QueryOptions;
 import org.checkerframework.checker.nullness.qual.NonNull;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.UUID;
-
-import static java.util.stream.Collectors.toUnmodifiableList;
+import java.util.*;
 
 /**
  * {@code LuckPermsGroupProvider} utilizes the {@link LuckPerms} API to retrieve a user's group information.
@@ -47,6 +43,20 @@ public class LuckPermsGroupProvider implements GroupProvider {
                 .stream()
                 .map(Group::getName)
                 .toList();
+    }
+
+    public LuckPermsGroupMeta getHighestWeightGroup(final @NonNull UUID uuid) {
+        final User user = this.luckPerms.getUserManager().getUser(uuid);
+
+        if (user == null) return null;
+
+        Collection<Group> groups = user.getInheritedGroups(QueryOptions.defaultContextualOptions().toBuilder().flag(Flag.RESOLVE_INHERITANCE, true).build());
+        Optional<Group> optionalHighestWeightGroup = groups
+                .stream()
+                .max(Comparator.comparingInt(o -> o.getWeight().orElse(0)));
+        if (optionalHighestWeightGroup.isEmpty()) return null;
+
+        return new LuckPermsGroupMeta(optionalHighestWeightGroup.get());
     }
 
 

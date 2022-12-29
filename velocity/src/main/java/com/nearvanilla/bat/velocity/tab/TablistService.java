@@ -6,28 +6,26 @@ import com.nearvanilla.bat.velocity.BatVelocityPlugin;
 import com.nearvanilla.bat.velocity.config.ConfigLoader;
 import com.nearvanilla.bat.velocity.config.PluginConfig;
 import com.nearvanilla.bat.velocity.config.TablistConfig;
+import com.nearvanilla.bat.velocity.tab.group.LuckPermsGroupMeta;
+import com.nearvanilla.bat.velocity.tab.group.LuckPermsGroupProvider;
 import com.velocitypowered.api.proxy.Player;
 import com.velocitypowered.api.proxy.ProxyServer;
 import com.velocitypowered.api.proxy.ServerConnection;
 import com.velocitypowered.api.proxy.player.TabList;
 import com.velocitypowered.api.proxy.player.TabListEntry;
 import com.velocitypowered.api.scheduler.ScheduledTask;
+import de.themoep.minedown.adventure.MineDown;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder;
 import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver;
+import net.luckperms.api.model.group.Group;
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.checkerframework.checker.nullness.qual.NonNull;
 
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
@@ -159,7 +157,20 @@ public class TablistService {
         final Player player = opt.get();
         final TagResolver tagResolver = this.tagResolver(player);
 
-        return this.miniMessage.deserialize(this.config.playerNameFormat, tagResolver);
+
+        MineDown mineDown;
+        if (serverDataProvider.groupProvider() instanceof LuckPermsGroupProvider luckPermsGroupProvider) {
+            LuckPermsGroupMeta highestWeightGroupMeta = luckPermsGroupProvider.getHighestWeightGroup(uuid);
+
+            String mineDownString = MineDown.stringify(this.miniMessage.deserialize(
+                    highestWeightGroupMeta.getMetaData().getPrefix() + " <playername>", tagResolver));
+            mineDown = new MineDown(mineDownString);
+        } else {
+            String mineDownString = MineDown.stringify(this.miniMessage.deserialize(this.config.playerNameFormat, tagResolver));
+            mineDown = new MineDown(mineDownString);
+        }
+
+        return mineDown.toComponent();
     }
 
     /**
@@ -183,7 +194,9 @@ public class TablistService {
         final Iterator<String> footerIt = footerFormatStrings.iterator();
 
         while (footerIt.hasNext()) {
-            footer.append(this.miniMessage.deserialize(footerIt.next(), tagResolver));
+            String mineDownString = MineDown.stringify(this.miniMessage.deserialize(footerIt.next(), tagResolver));
+            MineDown mineDown = new MineDown(mineDownString);
+            footer.append(mineDown.toComponent());
 
             if (footerIt.hasNext()) {
                 footer.append(Component.newline());
@@ -196,7 +209,9 @@ public class TablistService {
         final Iterator<String> headerIt = headerFormatStrings.iterator();
 
         while (headerIt.hasNext()) {
-            header.append(this.miniMessage.deserialize(headerIt.next(), tagResolver));
+            String mineDownString = MineDown.stringify(this.miniMessage.deserialize(headerIt.next(), tagResolver));
+            MineDown mineDown = new MineDown(mineDownString);
+            header.append(mineDown.toComponent());
 
             if (headerIt.hasNext()) {
                 header.append(Component.newline());

@@ -7,6 +7,7 @@ dependencies {
     implementation(libs.cloud.velocity)
     implementation(libs.cloud.annotations)
     implementation(libs.configurate.hocon)
+    implementation(libs.minedown)
 }
 
 tasks {
@@ -23,5 +24,7 @@ tasks {
         archiveClassifier.set(null as String?)
         archiveFileName.set(project.name + ".jar")
         destinationDirectory.set(rootProject.tasks.shadowJar.get().destinationDirectory.get())
+        relocate("de.themoep.minedown", "com.nearvanilla.bat.shaded.minedown")
+        minimize()
     }
 }
