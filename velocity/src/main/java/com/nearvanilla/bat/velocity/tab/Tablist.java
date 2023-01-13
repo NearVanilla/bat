@@ -6,10 +6,7 @@ import com.velocitypowered.api.proxy.player.TabListEntry;
 import com.velocitypowered.api.util.GameProfile;
 import org.checkerframework.checker.nullness.qual.NonNull;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 import java.util.logging.Logger;
 
 public class Tablist {
@@ -19,7 +16,7 @@ public class Tablist {
     private final @NonNull ServerDataProvider serverDataProvider;
     private final @NonNull List<String> headerFormatStrings;
     private final @NonNull List<String> footerFormatStrings;
-    private final @NonNull List<GameProfile> profileEntries;
+    private final @NonNull Collection<GameProfile> profileEntries;
 
     /**
      * Constructs {@code Tablist}.
@@ -40,7 +37,7 @@ public class Tablist {
         this.serverDataProvider = serverDataProvider;
         this.headerFormatStrings = headerFormatStrings;
         this.footerFormatStrings = footerFormatStrings;
-        this.profileEntries = new ArrayList<>();
+        this.profileEntries = Collections.synchronizedCollection(new ArrayList<>());
     }
 
     /**
@@ -58,7 +55,9 @@ public class Tablist {
      * @param player the player
      */
     public void removePlayer(final @NonNull Player player) {
-        this.profileEntries.removeIf(profile -> profile.getId().equals(player.getUniqueId()));
+        synchronized (profileEntries) {
+            this.profileEntries.removeIf(profile -> profile.getId().equals(player.getUniqueId()));
+        }
     }
 
     /**
@@ -68,18 +67,20 @@ public class Tablist {
      * @return the list of tablist entries
      */
     public @NonNull List<TabListEntry> entries(final @NonNull TabList tabList) {
-        return profileEntries
-                .stream()
-                .sorted(Comparator.comparing(GameProfile::getName))
-                .map(gameProfile ->
-                        TabListEntry.builder()
-                                .latency(this.tablistService.ping(gameProfile.getId()))
-                                .tabList(tabList)
-                                .profile(gameProfile)
-                                .displayName(this.tablistService.displayName(gameProfile.getId()))
-                                .gameMode(this.getGameMode(tabList, gameProfile.getId()))
-                                .build()
-                ).toList();
+        synchronized (profileEntries) {
+            return profileEntries
+                    .stream()
+                    .sorted(Comparator.comparing(GameProfile::getName))
+                    .map(gameProfile ->
+                            TabListEntry.builder()
+                                    .latency(this.tablistService.ping(gameProfile.getId()))
+                                    .tabList(tabList)
+                                    .profile(gameProfile)
+                                    .displayName(this.tablistService.displayName(gameProfile.getId()))
+                                    .gameMode(this.getGameMode(tabList, gameProfile.getId()))
+                                    .build()
+                    ).toList();
+        }
     }
 
     public @NonNull List<String> headerFormatStrings() {
