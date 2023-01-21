@@ -1,6 +1,7 @@
-name: "Gradle build"
+name: "Build"
 on:
   push:
+  pull_request:
 
 jobs:
   gradle-build:
@@ -15,7 +16,7 @@ jobs:
         uses: actions/setup-java@v3
         with:
           distribution: temurin
-          java-version: 11
+          java-version: 17
       - name: Gradle build
         uses: gradle/gradle-build-action@v2
         with:
@@ -24,4 +25,4 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: gradle-build-artifacts
-          path: "**/build/libs/*.jar"
+          path: "build/libs/*.jar"
