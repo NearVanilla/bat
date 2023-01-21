@@ -1,6 +1,7 @@
 name: "Gradle build"
 on:
   push:
+  pull_request:
 
 jobs:
   gradle-build:
