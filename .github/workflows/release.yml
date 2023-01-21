@@ -1,10 +1,13 @@
-name: "Gradle build"
+name: "Gradle build & create release"
 on:
   push:
 
+permissions:
+  contents: write
+
 jobs:
-  gradle-build:
-    name: "Build Gradle project"
+  gradle-build-release:
+    name: "Build Gradle project & create release"
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Git repository
@@ -25,3 +28,13 @@ jobs:
         with:
           name: gradle-build-artifacts
           path: "build/libs/*.jar"
+      - name: Create release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            build/libs/bat-velocity.jar
+            README.md
+            LICENSE
+          draft: false
+          prerelease: false
+          fail_on_unmatched_files: true

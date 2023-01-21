@@ -2,8 +2,8 @@ import com.github.jengelman.gradle.plugins.shadow.ShadowPlugin
 import net.kyori.indra.IndraPlugin
 
 plugins {
-    id("net.kyori.indra") version "2.0.5"
-    id("com.github.johnrengelman.shadow") version "7.0.0"
+    id("net.kyori.indra") version "3.0.1"
+    id("com.github.johnrengelman.shadow") version "7.1.2"
 }
 
 group = "com.nearvanilla.bat"
@@ -27,7 +27,7 @@ subprojects {
             gpl3OnlyLicense()
 
             javaVersions {
-                target(16)
+                target(17)
             }
         }
 

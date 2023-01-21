@@ -15,8 +15,8 @@ tasks {
     }
 
     compileJava {
-        sourceCompatibility = "16"
-        targetCompatibility = "16"
+        sourceCompatibility = "17"
+        targetCompatibility = "17"
     }
 
     shadowJar {

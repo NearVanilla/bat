@@ -6,7 +6,7 @@ Basic, awesome TAB plugin.
 
 #### Requirements
 
-- Java 16+
+- Java 17+
 - The latest **development** version of Velocity *(This plugin does not work on the Stable version!)*
 - Git (This is only required if you intend on cloning the repository through your Terminal)
 
