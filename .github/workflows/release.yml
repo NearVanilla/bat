@@ -1,6 +1,8 @@
 name: "Gradle build & create release"
 on:
   push:
+    branches:
+      - master
 
 permissions:
   contents: write
