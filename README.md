@@ -39,6 +39,7 @@ By default, bat provides a set of placeholders using [MiniMessage's template sys
 | `<playerping>`  | The player's ping to the proxy. Will just return the number without 'ms' or anything.                                                | `150`: int                                     |
 | `<playeruuid>`  | The player's UUID, in the dash-separated format.                                                                                     | `b4dc78cf-6aeb-439f-8c68-4b5b2a4e340c`: String |
 | `<playername>`  | The player's username.                                                                                                               | `Bluely_`: String                              |
+| `<playerserver>`| The player's server.                                                                                                                 | `Lobby`: String                                |
 | `<playerip>`    | The player's ip.                                                                                                                     | `127.0.0.1`: String                            |
 | `<date>`        | The date. (yyyy/MM/dd)                                                                                                               | `2021/09/25`: String                           |
 | `<time>`        | The time. (HH:mm a)                                                                                                                  | `5:24 PM`: String                              |

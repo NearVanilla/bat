@@ -71,8 +71,8 @@ public class BatVelocityPlugin {
         this.commands = this.injector.getInstance(Commands.class);
         this.commands.register();
 
-        if (this.server.getPluginManager().isLoaded("LuckPerms")) {
-            this.server.getEventManager().register(this, this.injector.getInstance(LuckPermsListener.class));
+        if (this.server.getPluginManager().isLoaded("luckperms")) {
+            this.injector.getInstance(LuckPermsListener.class);
         }
     }
 }
