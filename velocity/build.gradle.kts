@@ -23,5 +23,9 @@ tasks {
         archiveClassifier.set(null as String?)
         archiveFileName.set(project.name + ".jar")
         destinationDirectory.set(rootProject.tasks.shadowJar.get().destinationDirectory.get())
+        isEnableRelocation = true
+        relocationPrefix = "${rootProject.property("group")}.lib"
+
     }
+
 }

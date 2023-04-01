@@ -2,8 +2,8 @@ import com.github.jengelman.gradle.plugins.shadow.ShadowPlugin
 import net.kyori.indra.IndraPlugin
 
 plugins {
-    id("net.kyori.indra") version "3.0.1"
-    id("com.github.johnrengelman.shadow") version "7.1.2"
+    id("net.kyori.indra")
+    id("com.github.johnrengelman.shadow")
 }
 
 group = "com.nearvanilla.bat"
@@ -16,9 +16,8 @@ subprojects {
     }
 
     repositories {
-        maven("https://papermc.io/repo/repository/maven-public/")
+        maven("https://repo.papermc.io/repository/maven-public/")
         mavenCentral()
-        mavenLocal()
     }
 
     tasks {
