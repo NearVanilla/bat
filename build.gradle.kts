@@ -2,12 +2,12 @@ import com.github.jengelman.gradle.plugins.shadow.ShadowPlugin
 import net.kyori.indra.IndraPlugin
 
 plugins {
-    id("net.kyori.indra") version "3.0.1"
-    id("com.github.johnrengelman.shadow") version "7.1.2"
+    id("net.kyori.indra") version "3.2.0"
+    id("com.gradleup.shadow") version "9.0.0"
 }
 
 group = "com.nearvanilla.bat"
-version = "1.1.0-SNAPSHOT"
+version = "1.1.1-SNAPSHOT"
 
 subprojects {
     apply {
@@ -16,7 +16,8 @@ subprojects {
     }
 
     repositories {
-        maven("https://papermc.io/repo/repository/maven-public/")
+        maven("https://repo.papermc.io/repository/maven-public/")
+        maven("https://repo.sayandev.org/snapshots")
         mavenCentral()
         mavenLocal()
     }
@@ -27,7 +28,7 @@ subprojects {
             gpl3OnlyLicense()
 
             javaVersions {
-                target(17)
+                target(21)
             }
         }
 
