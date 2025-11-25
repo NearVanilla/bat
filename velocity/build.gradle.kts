@@ -15,13 +15,21 @@ tasks {
     }
 
     compileJava {
-        sourceCompatibility = "17"
-        targetCompatibility = "17"
+        sourceCompatibility = "21"
+        targetCompatibility = "21"
+
+        // Suppress annotation processing warnings
+        options.compilerArgs.add("-Xlint:-processing")
     }
 
     shadowJar {
-        archiveClassifier.set(null as String?)
-        archiveFileName.set(project.name + ".jar")
-        destinationDirectory.set(rootProject.tasks.shadowJar.get().destinationDirectory.get())
+        enableAutoRelocation = true
+        relocationPrefix = "${rootProject.property("group")}.${rootProject.property("name").toString().lowercase()}.lib"
+        minimize()
+        archiveClassifier.set("")
+        // Exclude duplicate meta files to fix remap errors
+        exclude("META-INF/LICENSE")
+        exclude("META-INF/NOTICE")
+        duplicatesStrategy = DuplicatesStrategy.EXCLUDE
     }
 }
