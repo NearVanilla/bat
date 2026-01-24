@@ -7,12 +7,16 @@ plugins {
 }
 
 group = "com.nearvanilla.bat"
-version = "1.1.1-SNAPSHOT"
+version = "1.1.2-SNAPSHOT"
 
 subprojects {
     apply {
         plugin<ShadowPlugin>()
         plugin<IndraPlugin>()
+    }
+
+    dependencies {
+        annotationProcessor("com.velocitypowered:velocity-api:3.4.0-SNAPSHOT")
     }
 
     repositories {
