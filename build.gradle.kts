@@ -15,10 +15,6 @@ subprojects {
         plugin<IndraPlugin>()
     }
 
-    dependencies {
-        annotationProcessor("com.velocitypowered:velocity-api:3.4.0-SNAPSHOT")
-    }
-
     repositories {
         maven("https://repo.papermc.io/repository/maven-public/")
         maven("https://repo.sayandev.org/snapshots")
