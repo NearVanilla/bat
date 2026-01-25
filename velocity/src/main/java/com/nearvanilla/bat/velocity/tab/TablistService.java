@@ -21,12 +21,15 @@ import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.checkerframework.checker.nullness.qual.NonNull;
 
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
@@ -296,6 +299,11 @@ public class TablistService {
 
     /**
      * Updates every player's tablist on the network.
+     *
+     * This method updates display names in-place rather than removing and re-adding entries,
+     * which preserves gamemode information that is managed by the backend server.
+     * Removing and re-adding entries would overwrite the current gamemode with stale data,
+     * causing issues like spectator mode no-clip not working.
      */
     private void updateTablists() {
         for (final Player player : this.server.getAllPlayers()) {
@@ -303,41 +311,44 @@ public class TablistService {
 
             final TabList tabList = player.getTabList();
 
-            final List<TabListEntry> currentEntries = this.defaultTablist.entries(tabList);
-            final List<TabListEntry> entries = new ArrayList<>(tabList.getEntries());
+            // Get the desired entries (for display names and which players should be in the list)
+            final List<TabListEntry> desiredEntries = this.defaultTablist.entries(tabList);
+            final Map<UUID, TabListEntry> existingEntries = new HashMap<>();
 
-            boolean equals = currentEntries.size() == entries.size();
+            // Build a map of existing entries by UUID for quick lookup
+            for (final TabListEntry entry : tabList.getEntries()) {
+                existingEntries.put(entry.getProfile().getId(), entry);
+            }
 
-            if (equals) {
-                for (int i = 0; i < currentEntries.size(); i++) {
-                    final TabListEntry currentEntry = currentEntries.get(i);
-                    final TabListEntry playerEntry = entries.get(i);
+            // Build a set of desired UUIDs
+            final Set<UUID> desiredUuids = new HashSet<>();
+            for (final TabListEntry entry : desiredEntries) {
+                desiredUuids.add(entry.getProfile().getId());
+            }
 
-                    final Component currentDisplayName = currentEntry.getDisplayNameComponent().isPresent()
-                            ? currentEntry.getDisplayNameComponent().get()
-                            : Component.empty();
-
-                    final Component playerDisplayName = playerEntry.getDisplayNameComponent().isPresent()
-                            ? playerEntry.getDisplayNameComponent().get()
-                            : Component.empty();
-
-                    if (!playerDisplayName.equals(currentDisplayName)) {
-                        equals = false;
-                        break;
-                    }
+            // Remove entries that shouldn't be in the list
+            for (final UUID uuid : existingEntries.keySet()) {
+                if (!desiredUuids.contains(uuid)) {
+                    tabList.removeEntry(uuid);
                 }
             }
 
-            if (!equals) {
-                final TabList newTabList = player.getTabList();
-                final List<TabListEntry> newEntries = this.defaultTablist.entries(newTabList);
+            // Update or add entries
+            for (final TabListEntry desiredEntry : desiredEntries) {
+                final UUID uuid = desiredEntry.getProfile().getId();
+                final TabListEntry existingEntry = existingEntries.get(uuid);
 
-                for (final TabListEntry entry : newTabList.getEntries()) {
-                    newTabList.removeEntry(entry.getProfile().getId());
-                }
+                if (existingEntry != null) {
+                    // Entry exists - update display name in-place to preserve gamemode
+                    final Component desiredDisplayName = desiredEntry.getDisplayNameComponent().orElse(null);
+                    final Component existingDisplayName = existingEntry.getDisplayNameComponent().orElse(null);
 
-                for (final TabListEntry currentEntry : newEntries) {
-                    newTabList.addEntry(currentEntry);
+                    if (!Objects.equals(desiredDisplayName, existingDisplayName)) {
+                        existingEntry.setDisplayName(desiredDisplayName);
+                    }
+                } else {
+                    // Entry doesn't exist - add it (this will use the gamemode from getGameMode())
+                    tabList.addEntry(desiredEntry);
                 }
             }
         }
