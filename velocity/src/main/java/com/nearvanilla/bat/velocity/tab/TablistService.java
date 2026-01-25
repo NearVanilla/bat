@@ -299,7 +299,7 @@ public class TablistService {
 
     /**
      * Updates every player's tablist on the network.
-     * <p>
+     *
      * This method updates display names in-place rather than removing and re-adding entries,
      * which preserves gamemode information that is managed by the backend server.
      * Removing and re-adding entries would overwrite the current gamemode with stale data,
