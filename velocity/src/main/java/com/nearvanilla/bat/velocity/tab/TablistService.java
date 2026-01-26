@@ -58,6 +58,9 @@ public class TablistService {
     private @MonotonicNonNull ScheduledTask tablistUpdateTask;
     private @MonotonicNonNull PluginConfig config;
 
+    /** Cache of last sent header/footer per player to avoid sending redundant updates. */
+    private final @NonNull Map<UUID, HeaderFooterCache> headerFooterCache;
+
 
     /**
      * Constructs {@code TablistService}
@@ -81,6 +84,7 @@ public class TablistService {
         this.server = server;
         this.miniMessage = MiniMessage.miniMessage();
         this.tablistMap = new ConcurrentHashMap<>();
+        this.headerFooterCache = new ConcurrentHashMap<>();
     }
 
     /**
@@ -132,6 +136,7 @@ public class TablistService {
      */
     public void handlePlayerLeave(final @NonNull Player player) {
         this.defaultTablist.removePlayer(player);
+        this.headerFooterCache.remove(player.getUniqueId());
     }
 
 
@@ -167,6 +172,7 @@ public class TablistService {
 
     /**
      * Updates a player's tablist's header and footer.
+     * Only sends the update if the content has changed from what was previously sent.
      *
      * @param player the player
      */
@@ -206,7 +212,19 @@ public class TablistService {
             }
         }
 
-        player.sendPlayerListHeaderAndFooter(header, footer);
+        final Component headerComponent = header.build();
+        final Component footerComponent = footer.build();
+
+        // Only send update if header or footer has changed
+        final UUID playerUuid = player.getUniqueId();
+        final HeaderFooterCache cached = this.headerFooterCache.get(playerUuid);
+
+        if (cached == null
+                || !Objects.equals(cached.header, headerComponent)
+                || !Objects.equals(cached.footer, footerComponent)) {
+            this.headerFooterCache.put(playerUuid, new HeaderFooterCache(headerComponent, footerComponent));
+            player.sendPlayerListHeaderAndFooter(headerComponent, footerComponent);
+        }
     }
 
     /**
@@ -357,6 +375,15 @@ public class TablistService {
     public int ping(final @NonNull UUID uuid) {
         final Optional<Player> player = server.getPlayer(uuid);
         return player.map(Player::getPing).orElse(-1L).intValue();
+    }
+
+    /**
+     * Cache record for storing the last sent header and footer for a player.
+     *
+     * @param header the last sent header component
+     * @param footer the last sent footer component
+     */
+    private record HeaderFooterCache(@NonNull Component header, @NonNull Component footer) {
     }
 
 }
