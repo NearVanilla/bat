@@ -3,7 +3,6 @@ package com.nearvanilla.bat.velocity.config;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.spongepowered.configurate.objectmapping.meta.Comment;
 
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -32,6 +31,11 @@ public class PluginConfig {
             The format of a player's name in the tablist. Supports MiniMessage and every bat placeholder.
             """)
     public @NonNull String playerNameFormat = "<groupcode><playername><servercode>";
+
+    @Comment("""
+            The plugin messaging channel to use for vanish updates.
+            """)
+    public @NonNull String vanishChannel = "icecream:vanish";
 
     @Comment("""
             If a player is in a LuckPerms group defined in this map, then the template "<groupcode>" will return it's

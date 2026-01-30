@@ -61,6 +61,8 @@ public class TablistService {
     /** Cache of last sent header/footer per player to avoid sending redundant updates. */
     private final @NonNull Map<UUID, HeaderFooterCache> headerFooterCache;
 
+    /** Set of vanished player UUIDs. */
+    private final @NonNull Set<UUID> vanishedPlayers;
 
     /**
      * Constructs {@code TablistService}
@@ -85,6 +87,7 @@ public class TablistService {
         this.miniMessage = MiniMessage.miniMessage();
         this.tablistMap = new ConcurrentHashMap<>();
         this.headerFooterCache = new ConcurrentHashMap<>();
+        this.vanishedPlayers = new HashSet<>();
     }
 
     /**
@@ -127,6 +130,55 @@ public class TablistService {
                 this.defaultTablist.addPlayer(player);
             }
         }
+    }
+    /**
+     * Sets the vanished state of a player.
+     *
+     * @param playerUuid the player's UUID
+     * @param vanished   true if the player is vanished
+     */
+    public void setPlayerVanishedState(final @NonNull UUID playerUuid, final boolean vanished) {
+        if (vanished) {
+            this.vanishedPlayers.add(playerUuid);
+        } else {
+            this.vanishedPlayers.remove(playerUuid);
+        }
+    }
+
+    /**
+     * Checks if a player is currently vanished.
+     *
+     * @param uuid the player's UUID
+     * @return true if the player is vanished
+     */
+    public boolean isVanished(final @NonNull UUID uuid) {
+        return this.vanishedPlayers.contains(uuid);
+    }
+
+    /**
+     * Returns the number of visible players on the proxy.
+     *
+     * @return the number of visible players
+     */
+    public int getVisiblePlayerCount() {
+        return (int) this.server.getAllPlayers().stream()
+                .filter(player -> !this.isVanished(player.getUniqueId()))
+                .count();
+    }
+
+    /**
+     * Returns the number of visible players on a specific server.
+     *
+     * @param serverName the server name
+     * @return the number of visible players
+     */
+    public int getVisiblePlayerCount(final @NonNull String serverName) {
+        return (int) this.server.getAllPlayers().stream()
+                .filter(player -> player.getCurrentServer()
+                        .map(connection -> connection.getServerInfo().getName().equals(serverName))
+                        .orElse(false))
+                .filter(player -> !this.isVanished(player.getUniqueId()))
+                .count();
     }
 
     /**
@@ -237,7 +289,7 @@ public class TablistService {
         final Optional<ServerConnection> connectionOpt = player.getCurrentServer();
 
         int maxPlayers = 0;
-        int onlinePlayers = 0;
+        int visibleServerPlayers = 0;
         @NonNull Component motd = Component.empty();
         @NonNull String serverName = "";
 
@@ -246,23 +298,24 @@ public class TablistService {
             final String name = connection.getServerInfo().getName();
 
             maxPlayers = this.serverDataProvider.getMaxPlayers(name);
-            onlinePlayers = this.serverDataProvider.getPlayers(name);
             motd = this.serverDataProvider.getMotd(name);
             serverName = name;
+            visibleServerPlayers = this.getVisiblePlayerCount(name);
         }
 
         final Date now = new Date();
 
         final String groupCodeFormat = this.groupCode(player);
         final String serverCodeFormat = this.serverCode(player);
+        final int visibleProxyPlayers = this.getVisiblePlayerCount();
 
         return TagResolver.resolver(List.of(
                 Placeholder.parsed("groupcode", groupCodeFormat),
                 Placeholder.parsed("servercode", serverCodeFormat),
-                Placeholder.unparsed("proxycount", Integer.toString(server.getPlayerCount())),
+                Placeholder.unparsed("proxycount", Integer.toString(visibleProxyPlayers)),
                 Placeholder.unparsed("proxymax", Integer.toString(server.getConfiguration().getShowMaxPlayers())),
                 Placeholder.component("proxymotd", server.getConfiguration().getMotd()),
-                Placeholder.unparsed("servercount", Integer.toString(onlinePlayers)),
+                Placeholder.unparsed("servercount", Integer.toString(visibleServerPlayers)),
                 Placeholder.unparsed("servermax", Integer.toString(maxPlayers)),
                 Placeholder.component("servermotd", motd),
                 Placeholder.unparsed("playerping", Long.toString(player.getPing())),

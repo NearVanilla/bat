@@ -70,6 +70,7 @@ public class Tablist {
         synchronized (profileEntries) {
             return profileEntries
                     .stream()
+                    .filter(gameProfile -> !this.tablistService.isVanished(gameProfile.getId()))
                     .sorted(Comparator.comparing(GameProfile::getName))
                     .map(gameProfile ->
                             TabListEntry.builder()
