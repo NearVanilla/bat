@@ -64,7 +64,7 @@ public class Tablist {
     /**
      * Generates a list of {@link TabListEntry}s for ALL players, with {@code listed} set based on
      * vanish state. Vanished players are included with {@code listed=false} so their entry is kept
-     * in the tab list without being displayed — this preserves the gamemode value that the backend
+     * in the tab list without being displayed. This preserves the gamemode value that the backend
      * manages, avoiding the ADD_PLAYER re-send that would overwrite it with stale data.
      *
      * @param tabList the tablist

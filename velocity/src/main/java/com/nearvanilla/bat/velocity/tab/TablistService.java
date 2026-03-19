@@ -371,7 +371,7 @@ public class TablistService {
     /**
      * Updates every player's tablist on the network.
      *
-     * <p>Entries are never removed for vanished players — instead their {@code listed} flag is
+     * <p>Entries are never removed for vanished players. Instead, their {@code listed} flag is
      * toggled to {@code false}, which hides them from the displayed tab list while keeping the
      * entry alive. This preserves the gamemode value that the backend manages via
      * {@code UPDATE_GAME_MODE} packets, avoiding the stale-gamemode problem that occurs when an
@@ -425,7 +425,7 @@ public class TablistService {
                         existingEntry.setListed(desiredEntry.isListed());
                     }
                 } else {
-                    // Entry doesn't exist yet (player just connected) — add it.
+                    // Entry doesn't exist yet (player just connected). Add it.
                     tabList.addEntry(desiredEntry);
                 }
             }
