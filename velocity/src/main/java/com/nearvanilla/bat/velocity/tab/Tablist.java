@@ -4,6 +4,7 @@ import com.velocitypowered.api.proxy.Player;
 import com.velocitypowered.api.proxy.player.TabList;
 import com.velocitypowered.api.proxy.player.TabListEntry;
 import com.velocitypowered.api.util.GameProfile;
+import net.kyori.adventure.text.Component;
 import org.checkerframework.checker.nullness.qual.NonNull;
 
 import java.util.*;
@@ -61,26 +62,33 @@ public class Tablist {
     }
 
     /**
-     * Generates a list of {@link TabListEntry}s for the tablist.
+     * Generates a list of {@link TabListEntry}s for ALL players, with {@code listed} set based on
+     * vanish state. Vanished players are included with {@code listed=false} so their entry is kept
+     * in the tab list without being displayed — this preserves the gamemode value that the backend
+     * manages, avoiding the ADD_PLAYER re-send that would overwrite it with stale data.
      *
      * @param tabList the tablist
-     * @return the list of tablist entries
+     * @return the list of tablist entries for all players
      */
-    public @NonNull List<TabListEntry> entries(final @NonNull TabList tabList) {
+    public @NonNull List<TabListEntry> allEntries(final @NonNull TabList tabList) {
         synchronized (profileEntries) {
             return profileEntries
                     .stream()
-                    .filter(gameProfile -> !this.tablistService.isVanished(gameProfile.getId()))
                     .sorted(Comparator.comparing(GameProfile::getName))
-                    .map(gameProfile ->
-                            TabListEntry.builder()
-                                    .latency(this.tablistService.ping(gameProfile.getId()))
-                                    .tabList(tabList)
-                                    .profile(gameProfile)
-                                    .displayName(this.tablistService.displayName(gameProfile.getId()))
-                                    .gameMode(this.getGameMode(tabList, gameProfile.getId()))
-                                    .build()
-                    ).toList();
+                    .map(gameProfile -> {
+                        final boolean listed = !this.tablistService.isVanished(gameProfile.getId());
+                        final Component displayName = listed
+                                ? this.tablistService.displayName(gameProfile.getId())
+                                : null;
+                        return (TabListEntry) TabListEntry.builder()
+                                .latency(this.tablistService.ping(gameProfile.getId()))
+                                .tabList(tabList)
+                                .profile(gameProfile)
+                                .displayName(displayName)
+                                .gameMode(this.getGameMode(tabList, gameProfile.getId()))
+                                .listed(listed)
+                                .build();
+                    }).toList();
         }
     }
 

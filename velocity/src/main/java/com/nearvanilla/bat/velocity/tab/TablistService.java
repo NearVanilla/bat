@@ -371,10 +371,14 @@ public class TablistService {
     /**
      * Updates every player's tablist on the network.
      *
-     * This method updates display names in-place rather than removing and re-adding entries,
-     * which preserves gamemode information that is managed by the backend server.
-     * Removing and re-adding entries would overwrite the current gamemode with stale data,
-     * causing issues like spectator mode no-clip not working.
+     * <p>Entries are never removed for vanished players — instead their {@code listed} flag is
+     * toggled to {@code false}, which hides them from the displayed tab list while keeping the
+     * entry alive. This preserves the gamemode value that the backend manages via
+     * {@code UPDATE_GAME_MODE} packets, avoiding the stale-gamemode problem that occurs when an
+     * entry is removed and then re-added (ADD_PLAYER) with gamemode 0, which can break spectator
+     * no-clip and cause movement desync on the client.
+     *
+     * <p>Entries are only truly removed when a player disconnects from the proxy.
      */
     private void updateTablists() {
         for (final Player player : this.server.getAllPlayers()) {
@@ -382,43 +386,46 @@ public class TablistService {
 
             final TabList tabList = player.getTabList();
 
-            // Get the desired entries (for display names and which players should be in the list)
-            final List<TabListEntry> desiredEntries = this.defaultTablist.entries(tabList);
+            // All entries: visible players have listed=true, vanished players have listed=false.
+            final List<TabListEntry> allEntries = this.defaultTablist.allEntries(tabList);
             final Map<UUID, TabListEntry> existingEntries = new HashMap<>();
 
-            // Build a map of existing entries by UUID for quick lookup
             for (final TabListEntry entry : tabList.getEntries()) {
                 existingEntries.put(entry.getProfile().getId(), entry);
             }
 
-            // Build a set of desired UUIDs
-            final Set<UUID> desiredUuids = new HashSet<>();
-            for (final TabListEntry entry : desiredEntries) {
-                desiredUuids.add(entry.getProfile().getId());
+            // Build the set of all UUIDs that belong in the tab list (connected players).
+            final Set<UUID> allUuids = new HashSet<>();
+            for (final TabListEntry entry : allEntries) {
+                allUuids.add(entry.getProfile().getId());
             }
 
-            // Remove entries that shouldn't be in the list
+            // Remove entries only for players who have truly left the proxy.
             for (final UUID uuid : existingEntries.keySet()) {
-                if (!desiredUuids.contains(uuid)) {
+                if (!allUuids.contains(uuid)) {
                     tabList.removeEntry(uuid);
                 }
             }
 
-            // Update or add entries
-            for (final TabListEntry desiredEntry : desiredEntries) {
+            // Update or add entries, toggling listed in-place to hide/show vanished players.
+            for (final TabListEntry desiredEntry : allEntries) {
                 final UUID uuid = desiredEntry.getProfile().getId();
                 final TabListEntry existingEntry = existingEntries.get(uuid);
 
                 if (existingEntry != null) {
-                    // Entry exists - update display name in-place to preserve gamemode
+                    // Update display name in-place to preserve gamemode.
                     final Component desiredDisplayName = desiredEntry.getDisplayNameComponent().orElse(null);
                     final Component existingDisplayName = existingEntry.getDisplayNameComponent().orElse(null);
-
                     if (!Objects.equals(desiredDisplayName, existingDisplayName)) {
                         existingEntry.setDisplayName(desiredDisplayName);
                     }
+
+                    // Toggle listed without removing/re-adding, so gamemode is never overwritten.
+                    if (existingEntry.isListed() != desiredEntry.isListed()) {
+                        existingEntry.setListed(desiredEntry.isListed());
+                    }
                 } else {
-                    // Entry doesn't exist - add it (this will use the gamemode from getGameMode())
+                    // Entry doesn't exist yet (player just connected) — add it.
                     tabList.addEntry(desiredEntry);
                 }
             }
