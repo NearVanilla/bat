@@ -38,6 +38,11 @@ public class PluginConfig {
     public @NonNull String vanishChannel = "icecream:vanish";
 
     @Comment("""
+            The plugin messaging channel to use for spectator mode updates.
+            """)
+    public @NonNull String spectatorChannel = "icecream:spectator";
+
+    @Comment("""
             If a player is in a LuckPerms group defined in this map, then the template "<groupcode>" will return it's
             value in this map. Otherwise, "<groupcode>" will return nothing ("").
             """)

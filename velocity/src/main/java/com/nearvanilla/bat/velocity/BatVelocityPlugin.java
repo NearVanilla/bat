@@ -47,6 +47,7 @@ public class BatVelocityPlugin {
     private @MonotonicNonNull Commands commands;
 
     private @MonotonicNonNull MinecraftChannelIdentifier vanishChannel;
+    private @MonotonicNonNull MinecraftChannelIdentifier spectatorChannel;
 
     /**
      * Constructs {@code BatVelocityPlugin}.
@@ -71,6 +72,10 @@ public class BatVelocityPlugin {
         final String channelName = configLoader.batConfig().vanishChannel;
         this.vanishChannel = MinecraftChannelIdentifier.from(channelName);
         server.getChannelRegistrar().register(this.vanishChannel);
+
+        final String spectatorChannelName = configLoader.batConfig().spectatorChannel;
+        this.spectatorChannel = MinecraftChannelIdentifier.from(spectatorChannelName);
+        server.getChannelRegistrar().register(this.spectatorChannel);
     }
 
     @Subscribe
@@ -105,7 +110,9 @@ public class BatVelocityPlugin {
         // Check if the identifier matches first, no matter the source.
         // this allows setting all messages to IDENTIFIER as handled,
         // preventing any client-originating messages from being forwarded.
-        if (this.vanishChannel == null || !this.vanishChannel.equals(event.getIdentifier())) {
+        final boolean isVanishChannel = this.vanishChannel != null && this.vanishChannel.equals(event.getIdentifier());
+        final boolean isSpectatorChannel = this.spectatorChannel != null && this.spectatorChannel.equals(event.getIdentifier());
+        if (!isVanishChannel && !isSpectatorChannel) {
             return;
         }
 
