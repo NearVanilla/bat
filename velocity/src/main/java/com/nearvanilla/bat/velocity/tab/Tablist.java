@@ -80,7 +80,7 @@ public class Tablist {
                         final Component displayName = listed
                                 ? this.tablistService.displayName(gameProfile.getId())
                                 : null;
-                        return (TabListEntry) TabListEntry.builder()
+                        return TabListEntry.builder()
                                 .latency(this.tablistService.ping(gameProfile.getId()))
                                 .tabList(tabList)
                                 .profile(gameProfile)
