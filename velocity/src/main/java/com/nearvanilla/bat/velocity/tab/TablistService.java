@@ -189,6 +189,7 @@ public class TablistService {
     public void handlePlayerLeave(final @NonNull Player player) {
         this.defaultTablist.removePlayer(player);
         this.headerFooterCache.remove(player.getUniqueId());
+        this.vanishedPlayers.remove(player.getUniqueId());
     }
 
 
