@@ -143,6 +143,31 @@ public class TablistService {
         } else {
             this.vanishedPlayers.remove(playerUuid);
         }
+        this.syncListedStateForPlayer(playerUuid);
+    }
+
+    /**
+     * Immediately syncs the {@code listed} flag for the given player in every connected player's
+     * tab list. Updates entries in-place to preserve the backend-managed gamemode value.
+     *
+     * @param playerUuid the UUID of the player whose listed state changed
+     */
+    private void syncListedStateForPlayer(final @NonNull UUID playerUuid) {
+        if (this.defaultTablist == null) return;
+
+        final boolean listed = !this.isVanished(playerUuid);
+
+        for (final Player viewer : this.server.getAllPlayers()) {
+            final TabList tabList = viewer.getTabList();
+            tabList.getEntries().stream()
+                    .filter(entry -> entry.getProfile().getId().equals(playerUuid))
+                    .findFirst()
+                    .ifPresent(entry -> {
+                        if (entry.isListed() != listed) {
+                            entry.setListed(listed);
+                        }
+                    });
+        }
     }
 
     /**
@@ -189,7 +214,6 @@ public class TablistService {
     public void handlePlayerLeave(final @NonNull Player player) {
         this.defaultTablist.removePlayer(player);
         this.headerFooterCache.remove(player.getUniqueId());
-        this.vanishedPlayers.remove(player.getUniqueId());
     }
 
 
