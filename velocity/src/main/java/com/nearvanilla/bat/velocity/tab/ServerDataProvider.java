@@ -13,8 +13,8 @@ import net.kyori.adventure.text.Component;
 import net.luckperms.api.LuckPermsProvider;
 import org.checkerframework.checker.nullness.qual.NonNull;
 
-import javax.inject.Inject;
-import javax.inject.Singleton;
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;

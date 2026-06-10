@@ -32,7 +32,7 @@ import org.slf4j.Logger;
 @Plugin(
         id = "bat",
         name = "bat",
-        version = "1.1.4",
+        version = "1.1.5",
         authors = {"Bluely_", "Prof_Bloodstone"},
         description = "Basic, awesome TAB plugin",
         url = "nearvanilla.com"
