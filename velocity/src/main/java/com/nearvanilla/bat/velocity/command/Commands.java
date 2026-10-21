@@ -1,25 +1,23 @@
 package com.nearvanilla.bat.velocity.command;
 
-import cloud.commandframework.Command;
-import cloud.commandframework.annotations.AnnotationParser;
-import cloud.commandframework.annotations.CommandDescription;
-import cloud.commandframework.annotations.CommandMethod;
-import cloud.commandframework.annotations.CommandPermission;
-import cloud.commandframework.meta.SimpleCommandMeta;
 import com.google.inject.Inject;
 import com.nearvanilla.bat.velocity.BatVelocityPlugin;
 import com.nearvanilla.bat.velocity.config.ConfigLoader;
 import com.nearvanilla.bat.velocity.tab.TablistService;
+import com.velocitypowered.api.command.CommandSource;
 import com.velocitypowered.api.proxy.ProxyServer;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import org.checkerframework.checker.nullness.qual.NonNull;
-import cloud.commandframework.velocity.VelocityCommandManager;
-import cloud.commandframework.CommandManager;
-import cloud.commandframework.execution.CommandExecutionCoordinator;
-import com.velocitypowered.api.command.CommandSource;
+import org.incendo.cloud.CommandManager;
+import org.incendo.cloud.SenderMapper;
+import org.incendo.cloud.annotations.AnnotationParser;
+import org.incendo.cloud.annotations.Command;
+import org.incendo.cloud.annotations.CommandDescription;
+import org.incendo.cloud.annotations.Permission;
+import org.incendo.cloud.execution.ExecutionCoordinator;
+import org.incendo.cloud.velocity.VelocityCommandManager;
 
-import java.util.function.Function;
 
 /**
  * Manages commands
@@ -43,27 +41,24 @@ public class Commands {
         this.manager = new VelocityCommandManager<>(
                 server.getPluginManager().ensurePluginContainer(plugin),
                 server,
-                CommandExecutionCoordinator.simpleCoordinator(),
-                Function.identity(),
-                Function.identity()
-                );
+                ExecutionCoordinator.simpleCoordinator(),
+                SenderMapper.identity()
+        );
     }
 
     /**
      * Registers the commands
      */
     public void register() {
-        AnnotationParser<CommandSource> annotationParser;
-        annotationParser = new AnnotationParser<>(
-            manager, CommandSource.class, parserParams -> SimpleCommandMeta.empty()
-        );
+        final AnnotationParser<CommandSource> annotationParser =
+                new AnnotationParser<>(this.manager, CommandSource.class);
         // Parse commands
         annotationParser.parse(this);
     }
 
 
-    @CommandMethod("bat reload")
-    @CommandPermission("bat.command.reload")
+    @Command("bat reload")
+    @Permission("bat.command.reload")
     @CommandDescription("Reload BATs config")
     private void reloadConfig(final @NonNull CommandSource source) {
         try {
