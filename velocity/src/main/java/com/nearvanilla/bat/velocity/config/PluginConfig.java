@@ -24,17 +24,10 @@ public class PluginConfig {
     );
 
     @Comment("""
-            Usernames (case-insensitive) that are hidden from the tablist and excluded from every player count
-            (<proxycount>, <servercount> and the server list ping) while connected to a server listed in
-            'hidden-servers'. On any other server they are shown as normal.
-            """)
-    public @NonNull List<String> hiddenPlayers = List.of(
-            "105hua", "Dynant", "Demonstrations", "Prof_Bloodstone"
-    );
-
-    @Comment("""
-            Names of servers (as registered in Velocity, case-insensitive) on which the players in 'hidden-players'
-            are hidden. If empty, nobody is hidden.
+            Names of servers (as registered in Velocity, case-insensitive). Players connected to one of these
+            servers are hidden from every tablist and excluded from every player count (<proxycount>,
+            <servercount> and the server list ping). On any other server they are shown as normal.
+            If empty, nobody is hidden.
             """)
     public @NonNull List<String> hiddenServers = List.of();
 

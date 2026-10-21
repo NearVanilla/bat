@@ -66,10 +66,7 @@ public class TablistService {
     /** Set of vanished player UUIDs. */
     private final @NonNull Set<UUID> vanishedPlayers;
 
-    /** Lowercased usernames hidden while on a hidden server. Replaced wholesale on {@link #enable()}. */
-    private volatile @NonNull Set<String> hiddenNames = Set.of();
-
-    /** Lowercased server names on which {@link #hiddenNames} are hidden. Replaced wholesale on {@link #enable()}. */
+    /** Lowercased names of servers whose players are hidden. Replaced wholesale on {@link #enable()}. */
     private volatile @NonNull Set<String> hiddenServerNames = Set.of();
 
     /**
@@ -111,7 +108,6 @@ public class TablistService {
         this.tablistMap.clear();
 
         this.config = configLoader.batConfig();
-        this.hiddenNames = lowercased(this.config.hiddenPlayers);
         this.hiddenServerNames = lowercased(this.config.hiddenServers);
         for (final var entry : this.config.tablists.entrySet()) {
             final String id = entry.getKey();
@@ -167,20 +163,15 @@ public class TablistService {
 
     /**
      * Checks if a player must be hidden from every tablist and from player counts, either because
-     * they are vanished or because their username is in {@code hiddenPlayers} (case-insensitive)
-     * and they are currently connected to a server in {@code hiddenServers}.
+     * they are vanished or because they are currently connected to a server in {@code hiddenServers}
+     * (case-insensitive).
      *
-     * @param uuid     the player's UUID
-     * @param username the player's username
+     * @param uuid the player's UUID
      * @return true if the player is hidden
      */
-    public boolean isHidden(final @NonNull UUID uuid, final @NonNull String username) {
+    public boolean isHidden(final @NonNull UUID uuid) {
         if (this.isVanished(uuid)) {
             return true;
-        }
-
-        if (!this.hiddenNames.contains(username.toLowerCase(Locale.ROOT))) {
-            return false;
         }
 
         return this.server.getPlayer(uuid)
@@ -203,7 +194,7 @@ public class TablistService {
      */
     public int getVisiblePlayerCount() {
         return (int) this.server.getAllPlayers().stream()
-                .filter(player -> !this.isHidden(player.getUniqueId(), player.getUsername()))
+                .filter(player -> !this.isHidden(player.getUniqueId()))
                 .count();
     }
 
@@ -218,7 +209,7 @@ public class TablistService {
                 .filter(player -> player.getCurrentServer()
                         .map(connection -> connection.getServerInfo().getName().equals(serverName))
                         .orElse(false))
-                .filter(player -> !this.isHidden(player.getUniqueId(), player.getUsername()))
+                .filter(player -> !this.isHidden(player.getUniqueId()))
                 .count();
     }
 
