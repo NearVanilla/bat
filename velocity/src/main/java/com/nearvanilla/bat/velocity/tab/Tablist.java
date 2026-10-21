@@ -76,7 +76,7 @@ public class Tablist {
                     .stream()
                     .sorted(Comparator.comparing(GameProfile::getName))
                     .map(gameProfile -> {
-                        final boolean listed = !this.tablistService.isVanished(gameProfile.getId());
+                        final boolean listed = !this.tablistService.isHidden(gameProfile.getId(), gameProfile.getName());
                         final Component displayName = listed
                                 ? this.tablistService.displayName(gameProfile.getId())
                                 : null;
