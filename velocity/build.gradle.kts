@@ -15,8 +15,8 @@ tasks {
     }
 
     compileJava {
-        sourceCompatibility = "21"
-        targetCompatibility = "21"
+        sourceCompatibility = "25"
+        targetCompatibility = "25"
 
         // Suppress annotation processing warnings
         options.compilerArgs.add("-Xlint:-processing")

@@ -6,8 +6,8 @@ Basic, awesome TAB plugin.
 
 #### Requirements
 
-- Java 17+
-- The latest **development** version of Velocity *(This plugin does not work on the Stable version!)*
+- Java 25+
+- Velocity 4.x *(bat is built against Velocity API 4.3.0, which requires Java 25. Older Velocity versions are not supported.)*
 - Git (This is only required if you intend on cloning the repository through your Terminal)
 
 #### Compilation

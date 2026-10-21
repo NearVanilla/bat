@@ -4,6 +4,7 @@ import org.checkerframework.checker.nullness.qual.NonNull;
 import org.spongepowered.configurate.objectmapping.meta.Comment;
 
 import java.util.Map;
+import java.util.List;
 
 /**
  * Contains the plugin's configuration.
@@ -21,6 +22,14 @@ public class PluginConfig {
     public @NonNull Map<String, TablistConfig> tablists = Map.of(
             "default", new TablistConfig()
     );
+
+    @Comment("""
+            Names of servers (as registered in Velocity, case-insensitive). Players connected to one of these
+            servers are hidden from every tablist and excluded from every player count (<proxycount>,
+            <servercount> and the server list ping). On any other server they are shown as normal.
+            If empty, nobody is hidden.
+            """)
+    public @NonNull List<String> hiddenServers = List.of();
 
     @Comment("""
             The default tablist to show players.

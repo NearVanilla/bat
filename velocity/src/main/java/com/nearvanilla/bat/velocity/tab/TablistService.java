@@ -26,6 +26,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
@@ -34,6 +35,7 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 /**
  * Enables tablist functionality.
@@ -63,6 +65,9 @@ public class TablistService {
 
     /** Set of vanished player UUIDs. */
     private final @NonNull Set<UUID> vanishedPlayers;
+
+    /** Lowercased names of servers whose players are hidden. Replaced wholesale on {@link #enable()}. */
+    private volatile @NonNull Set<String> hiddenServerNames = Set.of();
 
     /**
      * Constructs {@code TablistService}
@@ -103,6 +108,7 @@ public class TablistService {
         this.tablistMap.clear();
 
         this.config = configLoader.batConfig();
+        this.hiddenServerNames = lowercased(this.config.hiddenServers);
         for (final var entry : this.config.tablists.entrySet()) {
             final String id = entry.getKey();
             final TablistConfig tablistConfig = entry.getValue();
@@ -181,13 +187,39 @@ public class TablistService {
     }
 
     /**
+     * Checks if a player must be hidden from every tablist and from player counts, either because
+     * they are vanished or because they are currently connected to a server in {@code hiddenServers}
+     * (case-insensitive).
+     *
+     * @param uuid the player's UUID
+     * @return true if the player is hidden
+     */
+    public boolean isHidden(final @NonNull UUID uuid) {
+        if (this.isVanished(uuid)) {
+            return true;
+        }
+
+        return this.server.getPlayer(uuid)
+                .flatMap(Player::getCurrentServer)
+                .map(connection -> this.hiddenServerNames
+                        .contains(connection.getServerInfo().getName().toLowerCase(Locale.ROOT)))
+                .orElse(false);
+    }
+
+    private static @NonNull Set<String> lowercased(final @NonNull List<String> values) {
+        return values.stream()
+                .map(value -> value.toLowerCase(Locale.ROOT))
+                .collect(Collectors.toUnmodifiableSet());
+    }
+
+    /**
      * Returns the number of visible players on the proxy.
      *
      * @return the number of visible players
      */
     public int getVisiblePlayerCount() {
         return (int) this.server.getAllPlayers().stream()
-                .filter(player -> !this.isVanished(player.getUniqueId()))
+                .filter(player -> !this.isHidden(player.getUniqueId()))
                 .count();
     }
 
@@ -202,7 +234,7 @@ public class TablistService {
                 .filter(player -> player.getCurrentServer()
                         .map(connection -> connection.getServerInfo().getName().equals(serverName))
                         .orElse(false))
-                .filter(player -> !this.isVanished(player.getUniqueId()))
+                .filter(player -> !this.isHidden(player.getUniqueId()))
                 .count();
     }
 
