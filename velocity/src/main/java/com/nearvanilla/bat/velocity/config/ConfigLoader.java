@@ -36,6 +36,7 @@ public class ConfigLoader {
         - <playername> - the player's name
         - <playerip> - the player's ip
         - <playerserver> - the player's connected server name
+        - <statuscode> - the player's status code, see status-codes
         """;
 
     private final @NonNull BatVelocityPlugin plugin;

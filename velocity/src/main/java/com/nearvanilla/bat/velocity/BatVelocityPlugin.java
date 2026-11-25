@@ -46,8 +46,8 @@ public class BatVelocityPlugin {
     private @MonotonicNonNull TablistService tablistService;
     private @MonotonicNonNull Commands commands;
 
-    private @MonotonicNonNull MinecraftChannelIdentifier vanishChannel;
     private @MonotonicNonNull MinecraftChannelIdentifier spectatorChannel;
+    private @MonotonicNonNull MinecraftChannelIdentifier statusChannel;
 
     /**
      * Constructs {@code BatVelocityPlugin}.
@@ -69,13 +69,13 @@ public class BatVelocityPlugin {
         // Resolve config via injector to avoid constructor-injecting ConfigLoader,
         // which would create a Guice circular dependency on the plugin class.
         final ConfigLoader configLoader = this.injector.getInstance(ConfigLoader.class);
-        final String channelName = configLoader.batConfig().vanishChannel;
-        this.vanishChannel = MinecraftChannelIdentifier.from(channelName);
-        server.getChannelRegistrar().register(this.vanishChannel);
-
         final String spectatorChannelName = configLoader.batConfig().spectatorChannel;
         this.spectatorChannel = MinecraftChannelIdentifier.from(spectatorChannelName);
         server.getChannelRegistrar().register(this.spectatorChannel);
+
+        final String statusChannelName = configLoader.batConfig().statusChannel;
+        this.statusChannel = MinecraftChannelIdentifier.from(statusChannelName);
+        server.getChannelRegistrar().register(this.statusChannel);
     }
 
     @Subscribe
@@ -110,9 +110,9 @@ public class BatVelocityPlugin {
         // Check if the identifier matches first, no matter the source.
         // this allows setting all messages to IDENTIFIER as handled,
         // preventing any client-originating messages from being forwarded.
-        final boolean isVanishChannel = this.vanishChannel != null && this.vanishChannel.equals(event.getIdentifier());
         final boolean isSpectatorChannel = this.spectatorChannel != null && this.spectatorChannel.equals(event.getIdentifier());
-        if (!isVanishChannel && !isSpectatorChannel) {
+        final boolean isStatusChannel = this.statusChannel != null && this.statusChannel.equals(event.getIdentifier());
+        if (!isSpectatorChannel && !isStatusChannel) {
             return;
         }
 
@@ -123,11 +123,44 @@ public class BatVelocityPlugin {
             return;
         }
 
-        ByteArrayDataInput in = ByteStreams.newDataInput(event.getData());
-        final UUID playerUuid = UUID.fromString(in.readUTF());
-        final boolean vanished = in.readBoolean();
+        final ServerConnection connection = (ServerConnection) event.getSource();
+        try {
+            ByteArrayDataInput in = ByteStreams.newDataInput(event.getData());
+            final UUID playerUuid = UUID.fromString(in.readUTF());
 
-        this.tablistService.setPlayerVanishedState(playerUuid, vanished);
+            if (isStatusChannel) {
+                this.handleStatusMessage(connection, playerUuid, in);
+            } else {
+                final boolean vanished = in.readBoolean();
+
+                this.tablistService.setPlayerVanishedState(playerUuid, vanished);
+            }
+        } catch (final IllegalArgumentException | IllegalStateException e) {
+            this.logger.warn("Ignoring a malformed {} message from {}",
+                    event.getIdentifier().getId(), connection.getServerInfo().getName());
+        }
+    }
+
+    /**
+     * Sets a player's status from a status message, unless it came from a server the player is not on.
+     *
+     * @param connection the server connection the message came from
+     * @param playerUuid the UUID of the player the message is about
+     * @param in         the rest of the message: the status (UTF), empty for none
+     */
+    private void handleStatusMessage(final @NonNull ServerConnection connection, final @NonNull UUID playerUuid,
+                                     final @NonNull ByteArrayDataInput in) {
+        final String serverName = connection.getServerInfo().getName();
+        // Only the server the player is on sets their status; a late message from the
+        // server they just left is ignored.
+        final boolean fromCurrentServer = connection.getPlayer().getUniqueId().equals(playerUuid)
+                && connection.getPlayer().getCurrentServer()
+                .map(current -> current.getServerInfo().getName().equals(serverName))
+                .orElse(false);
+        if (!fromCurrentServer) {
+            return;
+        }
+        this.tablistService.setPlayerStatus(playerUuid, serverName, in.readUTF());
     }
 
     public void enable() {

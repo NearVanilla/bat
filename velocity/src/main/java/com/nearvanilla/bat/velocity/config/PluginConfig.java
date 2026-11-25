@@ -39,17 +39,27 @@ public class PluginConfig {
     @Comment("""
             The format of a player's name in the tablist. Supports MiniMessage and every bat placeholder.
             """)
-    public @NonNull String playerNameFormat = "<groupcode><playername><servercode>";
-
-    @Comment("""
-            The plugin messaging channel to use for vanish updates.
-            """)
-    public @NonNull String vanishChannel = "icecream:vanish";
+    public @NonNull String playerNameFormat = "<groupcode><statuscode> <playername><servercode>";
 
     @Comment("""
             The plugin messaging channel to use for spectator mode updates.
             """)
     public @NonNull String spectatorChannel = "icecream:spectator";
+
+    @Comment("""
+            The plugin messaging channel to use for player status updates.
+            """)
+    public @NonNull String statusChannel = "icecream:status";
+
+    @Comment("""
+            If a player has a status defined in this map, then the template "<statuscode>" will return its
+            value in this map. Statuses not in this map show nothing.
+            """)
+    public @NonNull Map<String, String> statusCodes = Map.of(
+            "afk", " <gray>⬤</gray>",
+            "do_not_disturb", " <red>⛔</red>",
+            "streaming", " <green>⬤</green>"
+    );
 
     @Comment("""
             If a player is in a LuckPerms group defined in this map, then the template "<groupcode>" will return it's

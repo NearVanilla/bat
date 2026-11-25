@@ -66,6 +66,9 @@ public class TablistService {
     /** Set of vanished player UUIDs. */
     private final @NonNull Set<UUID> vanishedPlayers;
 
+    /** Each player's status, with the server that sent it. */
+    private final @NonNull Map<UUID, PlayerStatus> playerStatuses;
+
     /** Lowercased names of servers whose players are hidden. Replaced wholesale on {@link #enable()}. */
     private volatile @NonNull Set<String> hiddenServerNames = Set.of();
 
@@ -93,6 +96,7 @@ public class TablistService {
         this.tablistMap = new ConcurrentHashMap<>();
         this.headerFooterCache = new ConcurrentHashMap<>();
         this.vanishedPlayers = new HashSet<>();
+        this.playerStatuses = new ConcurrentHashMap<>();
     }
 
     /**
@@ -150,6 +154,25 @@ public class TablistService {
             this.vanishedPlayers.remove(playerUuid);
         }
         this.syncListedStateForPlayer(playerUuid);
+    }
+
+    /**
+     * Sets a player's status. It is only shown while the player is on the server that sent it.
+     * The tablist picks up the change on its next update.
+     *
+     * @param playerUuid the player's UUID
+     * @param server     the name of the backend server that sent it
+     * @param status     the player's status, or an empty string to clear it
+     */
+    public void setPlayerStatus(final @NonNull UUID playerUuid, final @NonNull String server,
+                                final @NonNull String status) {
+        if (status.isEmpty()) {
+            // Only the server that set it may clear it.
+            this.playerStatuses.computeIfPresent(playerUuid,
+                    (uuid, current) -> current.server().equals(server) ? null : current);
+        } else {
+            this.playerStatuses.put(playerUuid, new PlayerStatus(server, status));
+        }
     }
 
     /**
@@ -246,6 +269,7 @@ public class TablistService {
     public void handlePlayerLeave(final @NonNull Player player) {
         this.defaultTablist.removePlayer(player);
         this.headerFooterCache.remove(player.getUniqueId());
+        this.playerStatuses.remove(player.getUniqueId());
     }
 
 
@@ -255,6 +279,11 @@ public class TablistService {
      * @param player the player
      */
     public void handleServerConnection(final @NonNull Player player) {
+        // A status belongs to the server that sent it; the new server sends its own.
+        final PlayerStatus status = this.playerStatuses.get(player.getUniqueId());
+        if (status != null && !status.server().equals(this.currentServerName(player))) {
+            this.playerStatuses.remove(player.getUniqueId(), status);
+        }
         this.defaultTablist.removePlayer(player);
         this.defaultTablist.addPlayer(player);
     }
@@ -364,11 +393,13 @@ public class TablistService {
 
         final String groupCodeFormat = this.groupCode(player);
         final String serverCodeFormat = this.serverCode(player);
+        final String statusCodeFormat = this.statusCode(player);
         final int visibleProxyPlayers = this.getVisiblePlayerCount();
 
         return TagResolver.resolver(List.of(
                 Placeholder.parsed("groupcode", groupCodeFormat),
                 Placeholder.parsed("servercode", serverCodeFormat),
+                Placeholder.parsed("statuscode", statusCodeFormat),
                 Placeholder.unparsed("proxycount", Integer.toString(visibleProxyPlayers)),
                 Placeholder.unparsed("proxymax", Integer.toString(server.getConfiguration().getShowMaxPlayers())),
                 Placeholder.component("proxymotd", server.getConfiguration().getMotd()),
@@ -423,6 +454,25 @@ public class TablistService {
         final String serverName = serverConnection.getServerInfo().getName();
 
         return serverCodes.getOrDefault(serverName, "");
+    }
+
+    /** Returns the name of the server the player is on, or "" while they are between servers. */
+    private @NonNull String currentServerName(final @NonNull Player player) {
+        return player.getCurrentServer().map(connection -> connection.getServerInfo().getName()).orElse("");
+    }
+
+    /**
+     * Returns the MiniMessage statusCode string for the player.
+     *
+     * @param player the player
+     * @return the status code of the player's status (will return "" if it has no statusCode)
+     */
+    private @NonNull String statusCode(final @NonNull Player player) {
+        final PlayerStatus status = this.playerStatuses.get(player.getUniqueId());
+        if (status == null || !status.server().equals(this.currentServerName(player))) {
+            return "";
+        }
+        return this.config.statusCodes.getOrDefault(status.status(), "");
     }
 
     /**
@@ -501,6 +551,15 @@ public class TablistService {
      * @param footer the last sent footer component
      */
     private record HeaderFooterCache(@NonNull Component header, @NonNull Component footer) {
+    }
+
+    /**
+     * A status a backend server sent for a player.
+     *
+     * @param server the name of the server that sent it
+     * @param status the status
+     */
+    private record PlayerStatus(@NonNull String server, @NonNull String status) {
     }
 
 }
