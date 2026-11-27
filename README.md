@@ -36,6 +36,7 @@ By default, bat provides a set of placeholders using [MiniMessage's template sys
 | `<servermax>`   | The maximum amount of players allowed on the local server.                                                                           | `100`: int                                     |
 | `<servermotd>`  | The local server's MOTD component.                                                                                                   | `A Minecraft Server`: Component                |
 | `<playerserver>`  | The local server's name that was registered with Velocity.                                                                           |                                                |
+| `<statuscode>`  | The player's status, as set by the backend server on the status channel, looked up in `status-codes`.                        | ` ⬤`: Component                                |
 | `<playerping>`  | The player's ping to the proxy. Will just return the number without 'ms' or anything.                                                | `150`: int                                     |
 | `<playeruuid>`  | The player's UUID, in the dash-separated format.                                                                                     | `b4dc78cf-6aeb-439f-8c68-4b5b2a4e340c`: String |
 | `<playername>`  | The player's username.                                                                                                               | `Bluely_`: String                              |
